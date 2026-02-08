@@ -12,8 +12,6 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "C:/Program Files/LLVM/bin/clang.exe",
-        "CMAKE_CXX_COMPILER": "C:/Program Files/LLVM/bin/clang++.exe",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     },
@@ -53,6 +51,34 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "cl",
         "CMAKE_CXX_COMPILER": "cl"
+      }
+    },
+    {
+      "name": "msys2-clang64",
+      "displayName": "MSYS2 CLANG64 (Debug, Ninja, Clang)",
+      "description": "Debug build using MSYS2 CLANG64 environment toolchain",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "FLUX_ENABLE_TESTS": "ON"
+      }
+    },
+    {
+      "name": "msys2-clang64-release",
+      "displayName": "MSYS2 CLANG64 (Release, Ninja, Clang)",
+      "description": "Release build using MSYS2 CLANG64 environment toolchain",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "FLUX_ENABLE_TESTS": "OFF"
       }
     }
   ],

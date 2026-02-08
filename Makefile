@@ -25,14 +25,24 @@ BUILD_DIR    := build
 FLUX_EXE     := $(BUILD_DIR)/tools/flux/flux.exe
 ARGS         ?=
 
-# Detect OS
+# Detect Environment
 ifeq ($(OS),Windows_NT)
-    SHELL    := cmd.exe
-    RM_RF    = if exist "$(1)" rmdir /s /q "$(1)"
+    # Detect if we are in MSYS or similar (which provides a real rm)
+    ifneq ($(findstring MSYS,$(shell uname -s 2>/dev/null)),)
+        SHELL    := /usr/bin/bash
+        RM_RF    = rm -rf $(1)
+        IS_MSYS  := 1
+        PRESET   ?= msys2-clang64
+    else
+        SHELL    := cmd.exe
+        RM_RF    = if exist "$(1)" rmdir /s /q "$(1)"
+        PRESET   ?= default
+    endif
     NINJA    := ninja
 else
     RM_RF    = rm -rf $(1)
     NINJA    := ninja
+    PRESET   ?= default
 endif
 
 # Default target
@@ -42,6 +52,13 @@ all: build
 # ── Configure ──────────────────────────────────────────────────────────────
 .PHONY: configure
 configure:
+	@# Detect if building for a different environment than before
+	@if [ -f $(BUILD_DIR)/CMakeCache.txt ]; then \
+		if [ "$(IS_MSYS)" = "1" ] && ! grep -q "MSYSTEM" $(BUILD_DIR)/CMakeCache.txt; then \
+			echo "Detected environment change to MSYS. Wiping build directory..."; \
+			$(call RM_RF,$(BUILD_DIR)); \
+		fi \
+	fi
 	cmake --preset $(PRESET)
 
 # ── Build ──────────────────────────────────────────────────────────────────

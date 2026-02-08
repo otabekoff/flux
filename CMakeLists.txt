@@ -39,7 +39,68 @@ endif()
 # ============================================================================
 # Find Dependencies
 # ============================================================================
+# Toolchain detection for Windows
+if(WIN32)
+    # Detect if we are using an MSVC-compatible toolchain (cl.exe or clang-cl)
+    if(MSVC OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC"))
+        set(FLUX_USING_MSVC_TOOLCHAIN ON)
+    else()
+        set(FLUX_USING_MSVC_TOOLCHAIN OFF)
+    endif()
+endif()
+
+# MSYS2/MinGW Path Discovery
+if(WIN32)
+    if(FLUX_USING_MSVC_TOOLCHAIN)
+        # Prioritize Windows-native LLVM installation paths
+        set(_FLUX_NATIVE_LLVM_ROOTS
+            "${CMAKE_SOURCE_DIR}/llvm-dev"
+            "C:/Program Files/LLVM"
+            "C:/Program Files (x86)/LLVM"
+        )
+        
+        # If we have an incompatible LLVM already in cache, clear it to allow re-discovery
+        if(DEFINED LLVM_DIR AND LLVM_DIR MATCHES "/(clang64|mingw64|ucrt64|msys64)/")
+            message(STATUS "Clearing incompatible MSYS2 LLVM from cache to prevent toolchain mismatch...")
+            unset(LLVM_DIR CACHE)
+        endif()
+
+        # Prepend native paths to search list
+        list(INSERT CMAKE_PREFIX_PATH 0 ${_FLUX_NATIVE_LLVM_ROOTS})
+    else()
+        # Only add MSYS2 paths if we are logically in an MSYS2 environment
+        # or if the user hasn't provided a specific LLVM_DIR
+        if(DEFINED ENV{MSYSTEM} OR DEFINED ENV{MSYSTEM_PREFIX})
+            if(DEFINED ENV{MSYSTEM_PREFIX})
+                set(CMAKE_PREFIX_PATH $ENV{MSYSTEM_PREFIX} ${CMAKE_PREFIX_PATH})
+            endif()
+            list(APPEND CMAKE_PREFIX_PATH 
+                "C:/msys64/clang64"
+                "C:/msys64/mingw64"
+                "C:/msys64/ucrt64"
+            )
+        endif()
+    endif()
+endif()
+
 find_package(LLVM REQUIRED CONFIG)
+
+# Toolchain Consistency Check
+if(WIN32)
+    # Detect mismatch between LLVM library and compiler target
+    string(TOLOWER "${LLVM_DIR}" _llvm_dir_lower)
+    if(FLUX_USING_MSVC_TOOLCHAIN AND _llvm_dir_lower MATCHES "/(clang64|mingw64|ucrt64|msys64)/")
+         message(FATAL_ERROR "Toolchain mismatch: Using MSVC-compatible toolchain with MSYS2/MinGW LLVM library.
+                              LLVM found at: ${LLVM_DIR}
+                              Please ensure you are NOT mixing MSYS2 environments with standard Windows LLVM/Clang.
+                              If using VS Code, check your selected 'Kit' or 'Preset'.")
+    endif()
+
+    if(NOT FLUX_USING_MSVC_TOOLCHAIN AND NOT _llvm_dir_lower MATCHES "/(clang64|mingw64|ucrt64|msys64)/")
+         # We are trying to use a MinGW/MSYS2 toolchain but found a non-MSYS2 LLVM (e.g. from D:/flux/llvm-dev)
+         message(WARNING "Using MSYS2/MinGW toolchain with a potentially incompatible LLVM library at: ${LLVM_DIR}")
+    endif()
+endif()
 
 # Resolve LibXml2 warning (often needed by LLVM's Windows builds)
 find_package(LibXml2 QUIET)
