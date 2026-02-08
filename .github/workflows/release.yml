@@ -29,22 +29,15 @@ jobs:
         echo "LLVM_DIR=$(brew --prefix llvm)/lib/cmake/llvm" >> $GITHUB_ENV
         echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
 
-    - name: Set up LLVM (Windows)
+    - name: Install LLVM (Windows)
       if: matrix.os == 'windows-latest'
-      run: |
-        choco install llvm ninja
-        $llvm_root = "C:/Program Files/LLVM"
-        $config_file = Get-ChildItem -Path $llvm_root -Filter "LLVMConfig.cmake" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($config_file) {
-          $cmake_dir = $config_file.DirectoryName -replace '\\', '/'
-          echo "Found LLVMConfig.cmake at: $cmake_dir"
-          echo "LLVM_DIR=$cmake_dir" >> $env:GITHUB_ENV
-          echo "CMAKE_PREFIX_PATH=$cmake_dir" >> $env:GITHUB_ENV
-          echo "$llvm_root/bin" >> $env:GITHUB_PATH
-        } else {
-          echo "::error::LLVMConfig.cmake not found in $llvm_root"
-          exit 1
-        }
+      uses: KyleMayes/install-llvm-action@v2
+      with:
+        version: "20"
+
+    - name: Install Ninja (Windows)
+      if: matrix.os == 'windows-latest'
+      run: choco install ninja
 
     - name: Configure and Build
       run: |
