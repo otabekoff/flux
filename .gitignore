@@ -9,7 +9,6 @@ llvm-dev/
 
 # IDE files
 .vs/
-.vscode/settings.json
 *.suo
 *.user
 *.sln.docstates

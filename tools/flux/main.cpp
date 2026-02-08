@@ -1,7 +1,7 @@
 /// Flux Compiler — CLI Driver
 ///
 /// Usage:
-///   flux <input.flux> [options]
+///   flux <input.fl> [options]
 ///
 /// Options:
 ///   -o <file>         Output file
@@ -48,7 +48,7 @@ struct DriverOptions {
 void printUsage() {
     std::cout << R"(Flux Compiler v0.1.0
 
-Usage: flux <input.flux> [options]
+Usage: flux <input.fl> [options]
 
 Options:
   -o <file>         Output file path

@@ -45,7 +45,7 @@ struct Diagnostic {
 ///
 /// Example output:
 ///   error[E0308]: mismatched types
-///     --> src/main.flux:12:9
+///     --> src/main.fl:12:9
 ///      |
 ///   12 |     let x: Int32 = "hello";
 ///      |            -----   ^^^^^^^ expected Int32, found String

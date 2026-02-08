@@ -1339,7 +1339,7 @@ func build_app() -> View {
 ### Multi-Phase Compilation Pipeline
 
 ```
-Source Code (.flux)
+Source Code (.fl)
     ↓
 Lexer (Tokenization)
     ↓
@@ -1416,7 +1416,7 @@ The compiler supports incremental compilation to speed up rebuild times:
 ```
 project/
 ├── src/
-│   └── main.flux
+│   └── main.fl
 ├── target/
 │   ├── debug/
 │   │   ├── my_app (executable)
@@ -1434,7 +1434,7 @@ Flux prioritizes helpful, actionable error messages:
 
 ```
 error[E0308]: mismatched types
-  --> src/main.flux:12:9
+  --> src/main.fl:12:9
    |
 12 |     let x: Int32 = "hello";
    |            -----   ^^^^^^^ expected Int32, found String
@@ -1551,7 +1551,7 @@ Provides IDE support via Language Server Protocol:
 fluxdb target/debug/my_app
 
 # Commands:
-# break main.flux:42 - Set breakpoint
+# break main.fl:42 - Set breakpoint
 # run - Start execution
 # continue - Continue execution
 # step - Step into
@@ -1746,7 +1746,7 @@ func old_function() -> Void {
 
 // Compiler warning:
 // warning: use of deprecated function `old_function`
-//   --> src/main.flux:10:5
+//   --> src/main.fl:10:5
 //    |
 // 10 |     old_function();
 //    |     ^^^^^^^^^^^^

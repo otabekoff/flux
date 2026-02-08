@@ -1,0 +1,163 @@
+{
+  "Function": {
+    "prefix": "func",
+    "body": [
+      "func ${1:name}(${2:params}) -> ${3:Void} {",
+      "    $0",
+      "}"
+    ],
+    "description": "Define a function"
+  },
+  "Main Function": {
+    "prefix": "main",
+    "body": [
+      "func main() -> Void {",
+      "    $0",
+      "}"
+    ],
+    "description": "Main entry point"
+  },
+  "Let Binding": {
+    "prefix": "let",
+    "body": "let ${1:name}: ${2:Type} = ${3:value};",
+    "description": "Immutable let binding"
+  },
+  "Let Mut Binding": {
+    "prefix": "letmut",
+    "body": "let mut ${1:name}: ${2:Type} = ${3:value};",
+    "description": "Mutable let binding"
+  },
+  "Const": {
+    "prefix": "const",
+    "body": "const ${1:NAME}: ${2:Type} = ${3:value};",
+    "description": "Constant declaration"
+  },
+  "Struct": {
+    "prefix": "struct",
+    "body": [
+      "struct ${1:Name} {",
+      "    ${2:field}: ${3:Type},",
+      "}"
+    ],
+    "description": "Define a struct"
+  },
+  "Enum": {
+    "prefix": "enum",
+    "body": [
+      "enum ${1:Name} {",
+      "    ${2:Variant},",
+      "}"
+    ],
+    "description": "Define an enum"
+  },
+  "Trait": {
+    "prefix": "trait",
+    "body": [
+      "trait ${1:Name} {",
+      "    func ${2:method}(self: &Self) -> ${3:Void};",
+      "}"
+    ],
+    "description": "Define a trait"
+  },
+  "Impl Block": {
+    "prefix": "impl",
+    "body": [
+      "impl ${1:Trait} for ${2:Type} {",
+      "    $0",
+      "}"
+    ],
+    "description": "Implement a trait for a type"
+  },
+  "If": {
+    "prefix": "if",
+    "body": [
+      "if ${1:condition} {",
+      "    $0",
+      "}"
+    ],
+    "description": "If statement"
+  },
+  "If-Else": {
+    "prefix": "ife",
+    "body": [
+      "if ${1:condition} {",
+      "    $2",
+      "} else {",
+      "    $0",
+      "}"
+    ],
+    "description": "If-else statement"
+  },
+  "Match": {
+    "prefix": "match",
+    "body": [
+      "match ${1:value} {",
+      "    ${2:pattern} => {",
+      "        $0",
+      "    }",
+      "}"
+    ],
+    "description": "Match expression"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": [
+      "for ${1:item} in ${2:collection} {",
+      "    $0",
+      "}"
+    ],
+    "description": "For-in loop"
+  },
+  "While Loop": {
+    "prefix": "while",
+    "body": [
+      "while ${1:condition} {",
+      "    $0",
+      "}"
+    ],
+    "description": "While loop"
+  },
+  "Loop": {
+    "prefix": "loop",
+    "body": [
+      "loop {",
+      "    $0",
+      "}"
+    ],
+    "description": "Infinite loop"
+  },
+  "Module": {
+    "prefix": "module",
+    "body": "module ${1:name};",
+    "description": "Module declaration"
+  },
+  "Import": {
+    "prefix": "import",
+    "body": "import ${1:module}::${2:item};",
+    "description": "Import declaration"
+  },
+  "Async Function": {
+    "prefix": "asyncfunc",
+    "body": [
+      "async func ${1:name}(${2:params}) -> ${3:Void} {",
+      "    $0",
+      "}"
+    ],
+    "description": "Async function definition"
+  },
+  "Test Annotation": {
+    "prefix": "test",
+    "body": [
+      "@test",
+      "func ${1:test_name}() -> Void {",
+      "    $0",
+      "}"
+    ],
+    "description": "Test function with @test annotation"
+  },
+  "Print": {
+    "prefix": "println",
+    "body": "io::println(${1:\"$2\"});",
+    "description": "Print a line to stdout"
+  }
+}

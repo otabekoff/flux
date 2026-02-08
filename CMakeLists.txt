@@ -40,12 +40,53 @@ message(STATUS "LLVM definitions: ${LLVM_DEFINITIONS}")
 include_directories(${LLVM_INCLUDE_DIRS})
 link_directories(${LLVM_LIBRARY_DIRS})
 
-# Fix: LLVM prebuilts reference VS 2019 DIA SDK path; point to VS 2022's DIA SDK
+# Auto-detect DIA SDK for MSVC (needed by LLVM prebuilts)
 if(MSVC)
-    set(_DIA_SDK_DIR "C:/Program Files/Microsoft Visual Studio/2022/Community/DIA SDK/lib/amd64")
-    if(EXISTS "${_DIA_SDK_DIR}/diaguids.lib")
-        link_directories("${_DIA_SDK_DIR}")
-        message(STATUS "DIA SDK: ${_DIA_SDK_DIR}")
+    set(_DIA_SDK_FOUND FALSE)
+
+    # Try VSINSTALLDIR environment variable first
+    if(DEFINED ENV{VSINSTALLDIR})
+        set(_DIA_CANDIDATE "$ENV{VSINSTALLDIR}/DIA SDK/lib/amd64")
+        cmake_path(NORMAL_PATH _DIA_CANDIDATE)
+        if(EXISTS "${_DIA_CANDIDATE}/diaguids.lib")
+            link_directories("${_DIA_CANDIDATE}")
+            message(STATUS "DIA SDK (from VSINSTALLDIR): ${_DIA_CANDIDATE}")
+            set(_DIA_SDK_FOUND TRUE)
+        endif()
+    endif()
+
+    # Fallback: scan standard VS installation paths
+    if(NOT _DIA_SDK_FOUND)
+        set(_VS_EDITIONS Community Professional Enterprise BuildTools)
+        set(_VS_YEARS 2022 2019)
+        set(_VS_ROOTS
+            "C:/Program Files/Microsoft Visual Studio"
+            "C:/Program Files (x86)/Microsoft Visual Studio"
+        )
+
+        foreach(_ROOT IN LISTS _VS_ROOTS)
+            foreach(_YEAR IN LISTS _VS_YEARS)
+                foreach(_EDITION IN LISTS _VS_EDITIONS)
+                    set(_DIA_CANDIDATE "${_ROOT}/${_YEAR}/${_EDITION}/DIA SDK/lib/amd64")
+                    if(EXISTS "${_DIA_CANDIDATE}/diaguids.lib")
+                        link_directories("${_DIA_CANDIDATE}")
+                        message(STATUS "DIA SDK (auto-detected): ${_DIA_CANDIDATE}")
+                        set(_DIA_SDK_FOUND TRUE)
+                        break()
+                    endif()
+                endforeach()
+                if(_DIA_SDK_FOUND)
+                    break()
+                endif()
+            endforeach()
+            if(_DIA_SDK_FOUND)
+                break()
+            endif()
+        endforeach()
+    endif()
+
+    if(NOT _DIA_SDK_FOUND)
+        message(WARNING "DIA SDK not found — LLVM debug info features may fail to link")
     endif()
 endif()
 separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})

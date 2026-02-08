@@ -1,0 +1,97 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: Configure",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--preset", "default"],
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Configure with CMake (Debug, Ninja)"
+    },
+    {
+      "label": "Build Flux",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "build"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$msCompile"],
+      "detail": "Build the Flux compiler",
+      "dependsOn": "CMake: Configure"
+    },
+    {
+      "label": "Build Release",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "build", "--config", "Release"],
+      "group": "build",
+      "problemMatcher": ["$msCompile"],
+      "detail": "Build Flux (Release)"
+    },
+    {
+      "label": "Run Tests",
+      "type": "shell",
+      "command": "ctest",
+      "args": ["--test-dir", "build", "--output-on-failure"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "detail": "Run all unit tests",
+      "dependsOn": "Build Flux"
+    },
+    {
+      "label": "Clean",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "build", "--target", "clean"],
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Clean build artifacts"
+    },
+    {
+      "label": "Reconfigure (Clean)",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--preset", "default", "--fresh"],
+      "group": "build",
+      "problemMatcher": [],
+      "detail": "Fresh CMake reconfigure"
+    },
+    {
+      "label": "Run Flux (current file)",
+      "type": "shell",
+      "command": "${workspaceFolder}/build/tools/flux/flux.exe",
+      "args": ["${file}"],
+      "group": "none",
+      "problemMatcher": [],
+      "detail": "Compile the currently open .fl file",
+      "dependsOn": "Build Flux"
+    },
+    {
+      "label": "Dump Tokens (current file)",
+      "type": "shell",
+      "command": "${workspaceFolder}/build/tools/flux/flux.exe",
+      "args": ["--dump-tokens", "${file}"],
+      "group": "none",
+      "problemMatcher": [],
+      "detail": "Dump token stream for current file",
+      "dependsOn": "Build Flux"
+    },
+    {
+      "label": "Dump AST (current file)",
+      "type": "shell",
+      "command": "${workspaceFolder}/build/tools/flux/flux.exe",
+      "args": ["--dump-ast", "${file}"],
+      "group": "none",
+      "problemMatcher": [],
+      "detail": "Dump AST for current file",
+      "dependsOn": "Build Flux"
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 // ============================================================
 // This is a minimal Flux program demonstrating basic syntax.
 //
-// Compile: flux hello.flux -o hello
+// Compile: flux hello.fl -o hello
 // Run:     ./hello
 
 module hello;

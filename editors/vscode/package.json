@@ -1,0 +1,54 @@
+{
+  "name": "flux-lang",
+  "displayName": "Flux Language",
+  "description": "Language support for the Flux programming language — syntax highlighting, snippets, bracket matching, and more.",
+  "version": "0.1.0",
+  "publisher": "flux-lang",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "keywords": [
+    "flux",
+    "fl",
+    "systems programming",
+    "ownership",
+    "static typing"
+  ],
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/flux-lang/flux"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "flux",
+        "aliases": ["Flux", "flux"],
+        "extensions": [".fl"],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "flux",
+        "scopeName": "source.flux",
+        "path": "./syntaxes/flux.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "flux",
+        "path": "./snippets/flux.json"
+      }
+    ]
+  }
+}
