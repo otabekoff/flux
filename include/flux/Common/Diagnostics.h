@@ -11,33 +11,28 @@
 namespace flux {
 
 /// Severity level for diagnostics.
-enum class DiagnosticSeverity : uint8_t {
-    Note,
-    Warning,
-    Error,
-    Fatal
-};
+enum class DiagnosticSeverity : uint8_t { Note, Warning, Error, Fatal };
 
 /// A single diagnostic message with source location and optional hints.
 struct Diagnostic {
-    DiagnosticSeverity severity;
+  DiagnosticSeverity severity;
+  SourceLocation location;
+  std::string message;
+
+  // Optional: related notes and hints
+  struct Note {
     SourceLocation location;
     std::string message;
+  };
+  std::vector<Note> notes;
 
-    // Optional: related notes and hints
-    struct Note {
-        SourceLocation location;
-        std::string message;
-    };
-    std::vector<Note> notes;
-
-    // Optional: suggested fix
-    struct Fix {
-        SourceRange range;
-        std::string replacement;
-        std::string description;
-    };
-    std::vector<Fix> fixes;
+  // Optional: suggested fix
+  struct Fix {
+    SourceRange range;
+    std::string replacement;
+    std::string description;
+  };
+  std::vector<Fix> fixes;
 };
 
 /// Diagnostic engine for the Flux compiler.
@@ -54,50 +49,50 @@ struct Diagnostic {
 ///
 class DiagnosticEngine {
 public:
-    using DiagnosticHandler = std::function<void(const Diagnostic&)>;
+  using DiagnosticHandler = std::function<void(const Diagnostic &)>;
 
-    DiagnosticEngine();
+  DiagnosticEngine();
 
-    /// Set a custom handler for diagnostics (default: print to stderr).
-    void setHandler(DiagnosticHandler handler);
+  /// Set a custom handler for diagnostics (default: print to stderr).
+  void setHandler(DiagnosticHandler handler);
 
-    /// Set the source manager for rich error formatting.
-    void setSourceManager(const SourceManager* sm);
+  /// Set the source manager for rich error formatting.
+  void setSourceManager(const SourceManager *sm);
 
-    // --- Emission methods ---
+  // --- Emission methods ---
 
-    void emitError(SourceLocation loc, const std::string& message);
-    void emitWarning(SourceLocation loc, const std::string& message);
-    void emitNote(SourceLocation loc, const std::string& message);
-    void emitFatal(SourceLocation loc, const std::string& message);
+  void emitError(SourceLocation loc, const std::string &message);
+  void emitWarning(SourceLocation loc, const std::string &message);
+  void emitNote(SourceLocation loc, const std::string &message);
+  void emitFatal(SourceLocation loc, const std::string &message);
 
-    /// Emit a diagnostic with full detail.
-    void emit(Diagnostic diag);
+  /// Emit a diagnostic with full detail.
+  void emit(Diagnostic diag);
 
-    // --- Query ---
+  // --- Query ---
 
-    bool hasErrors() const { return errorCount_ > 0; }
-    uint32_t errorCount() const { return errorCount_; }
-    uint32_t warningCount() const { return warningCount_; }
-    uint32_t getErrorCount() const { return errorCount_; }
-    uint32_t getWarningCount() const { return warningCount_; }
+  bool hasErrors() const { return errorCount_ > 0; }
+  uint32_t errorCount() const { return errorCount_; }
+  uint32_t warningCount() const { return warningCount_; }
+  uint32_t getErrorCount() const { return errorCount_; }
+  uint32_t getWarningCount() const { return warningCount_; }
 
-    /// Get all collected diagnostics (when using collection mode).
-    const std::vector<Diagnostic>& diagnostics() const { return diagnostics_; }
+  /// Get all collected diagnostics (when using collection mode).
+  const std::vector<Diagnostic> &diagnostics() const { return diagnostics_; }
 
-    /// Reset all state.
-    void reset();
+  /// Reset all state.
+  void reset();
 
 private:
-    void defaultHandler(const Diagnostic& diag);
-    std::string formatDiagnostic(const Diagnostic& diag) const;
-    std::string severityString(DiagnosticSeverity severity) const;
+  void defaultHandler(const Diagnostic &diag);
+  std::string formatDiagnostic(const Diagnostic &diag) const;
+  std::string severityString(DiagnosticSeverity severity) const;
 
-    DiagnosticHandler handler_;
-    const SourceManager* sourceManager_ = nullptr;
-    std::vector<Diagnostic> diagnostics_;
-    uint32_t errorCount_ = 0;
-    uint32_t warningCount_ = 0;
+  DiagnosticHandler handler_;
+  const SourceManager *sourceManager_ = nullptr;
+  std::vector<Diagnostic> diagnostics_;
+  uint32_t errorCount_ = 0;
+  uint32_t warningCount_ = 0;
 };
 
 } // namespace flux

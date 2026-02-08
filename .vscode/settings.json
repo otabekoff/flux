@@ -1,63 +1,70 @@
 {
-  // ── File Handling ─────────────────────────────────────────────────────
-  "files.autoSave": "afterDelay",
-  "files.autoSaveWhenNoErrors": true,
-  "files.autoSaveWorkspaceFilesOnly": true,
-  "files.autoSaveDelay": 0,
-
-  "files.associations": {
-    "*.fl": "flux"
-  },
-
-  "files.exclude": {
-    "**/.git": true,
-    "**/.svn": true,
-    "**/.hg": true,
-    "**/.DS_Store": true,
-    "**/Thumbs.db": true
-  },
-
-  "files.watcherExclude": {
-    "**/.git/objects/**": true,
-    "**/.git/subtree-cache/**": true,
-    "**/build/**": true,
-    "**/llvm-dev/**": true
-  },
-
-  // ── Explorer ──────────────────────────────────────────────────────────
-  "explorer.fileNesting.enabled": true,
-  "explorer.fileNesting.expand": false,
-  "explorer.fileNesting.patterns": {
-    "CMakeLists.txt": "CMakePresets.json, cmake_install.cmake",
-    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb",
-    "Makefile": "flux.toml, .clang-format, .clang-tidy, .editorconfig"
-  },
-
-  // ── CMake ─────────────────────────────────────────────────────────────
-  "cmake.configureOnOpen": true,
-  "cmake.useCMakePresets": "always",
-  "cmake.buildDirectory": "${workspaceFolder}/build",
-  "cmake.configureArgs": [],
-
-  // ── C/C++ IntelliSense ────────────────────────────────────────────────
-  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-  "C_Cpp.default.cppStandard": "c++20",
-  "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
-  "C_Cpp.files.exclude": {
-    "**/.vscode": true,
-    "**/.vs": true,
-    "**/build": true,
-    "**/llvm-dev": true
-  },
-  "C_Cpp.codeAnalysis.exclude": {
-    "**/build": true,
-    "**/llvm-dev": true
-  },
-
-  // ── Search ────────────────────────────────────────────────────────────
-  "search.exclude": {
-    "**/build": true,
-    "**/llvm-dev": true,
-    "**/_deps": true
-  }
+    // ── File Handling ─────────────────────────────────────────────────────
+    "files.autoSave": "afterDelay",
+    "files.autoSaveWhenNoErrors": true,
+    "files.autoSaveWorkspaceFilesOnly": true,
+    "files.autoSaveDelay": 0,
+    "files.associations": {
+        "*.fl": "flux"
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true
+    },
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/build/**": true,
+        "**/llvm-dev/**": true
+    },
+    // ── Explorer ──────────────────────────────────────────────────────────
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.expand": false,
+    "explorer.fileNesting.patterns": {
+        "CMakeLists.txt": "CMakePresets.json, cmake_install.cmake",
+        "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb",
+        "Makefile": "flux.toml, .clang-format, .clang-tidy, .editorconfig"
+    },
+    // ── CMake ─────────────────────────────────────────────────────────────
+    "cmake.configureOnOpen": true,
+    "cmake.useCMakePresets": "always",
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.configureArgs": [],
+    // ── C/C++ IntelliSense ────────────────────────────────────────────────
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.default.cppStandard": "c++20",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
+    "C_Cpp.files.exclude": {
+        "**/.vscode": true,
+        "**/.vs": true,
+        "**/build": true,
+        "**/llvm-dev": true
+    },
+    "C_Cpp.codeAnalysis.exclude": {
+        "**/build": true,
+        "**/llvm-dev": true
+    },
+    "clangd.arguments": [
+        "--compile-commands-dir=build",
+        "--background-index",
+        "--clang-tidy",
+        "--header-insertion=never",
+        "--completion-style=detailed",
+        "--query-driver=C:/Program Files/LLVM/bin/clang++.exe,C:/msys64/mingw64/bin/g++.exe,clang++,g++"
+    ],
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "cmake.generator": "Ninja",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    // ── Search ────────────────────────────────────────────────────────────
+    "search.exclude": {
+        "**/build": true,
+        "**/llvm-dev": true,
+        "**/_deps": true
+    }
 }

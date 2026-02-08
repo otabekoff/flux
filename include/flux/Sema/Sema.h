@@ -13,18 +13,18 @@ namespace flux {
 /// order over an AST module.
 class Sema {
 public:
-    explicit Sema(DiagnosticEngine& diag);
+  explicit Sema(DiagnosticEngine &diag);
 
-    /// Run all semantic analysis passes on the module.
-    /// Returns true if no errors were found.
-    bool analyze(ast::Module& module);
+  /// Run all semantic analysis passes on the module.
+  /// Returns true if no errors were found.
+  bool analyze(ast::Module &module);
 
-    /// Access the global scope after analysis.
-    const Scope& getGlobalScope() const { return globalScope_; }
+  /// Access the global scope after analysis.
+  const Scope &getGlobalScope() const { return globalScope_; }
 
 private:
-    DiagnosticEngine& diag_;
-    Scope globalScope_;
+  DiagnosticEngine &diag_;
+  Scope globalScope_;
 };
 
 } // namespace flux

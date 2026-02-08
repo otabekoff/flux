@@ -21,21 +21,21 @@ namespace flux {
 /// Maps Flux type nodes to LLVM types.
 class TypeMapper {
 public:
-    explicit TypeMapper(llvm::LLVMContext& ctx);
+  explicit TypeMapper(llvm::LLVMContext &ctx);
 
-    /// Map a Flux AST type to an LLVM type.
-    llvm::Type* mapType(const ast::TypeNode& type);
+  /// Map a Flux AST type to an LLVM type.
+  llvm::Type *mapType(const ast::TypeNode &type);
 
-    /// Get the LLVM type for a built-in type by name.
-    llvm::Type* getBuiltinType(const std::string& name);
+  /// Get the LLVM type for a built-in type by name.
+  llvm::Type *getBuiltinType(const std::string &name);
 
-    /// Get the void type.
-    llvm::Type* getVoidType();
+  /// Get the void type.
+  llvm::Type *getVoidType();
 
 private:
-    llvm::LLVMContext& ctx_;
-    std::unordered_map<std::string, llvm::Type*> builtinTypes_;
-    void initBuiltinTypes();
+  llvm::LLVMContext &ctx_;
+  std::unordered_map<std::string, llvm::Type *> builtinTypes_;
+  void initBuiltinTypes();
 };
 
 } // namespace flux

@@ -279,3 +279,44 @@ npm run preview   # Preview the built site
 ```
 
 The documentation uses VitePress with a custom Shiki grammar for Flux syntax highlighting — all ` ```flux ` code blocks are highlighted automatically.
+
+## Professional Distribution
+
+### Releasing
+
+Flux uses **Semantic Versioning** and **Conventional Commits**.
+
+1. **Commit Changes**: Use `npm run commit` for a guided conventional commit wizard.
+2. **Tagging**: When ready for a release, create a git tag:
+   ```bash
+   git tag -a v0.1.0 -m "Release v0.1.0"
+   git push origin v0.1.0
+   ```
+3. **Automated Release**: Pushing a tag triggers the [GitHub Actions Release Workflow](.github/workflows/release.yml), which:
+   - Builds binaries for Windows, Linux, and macOS.
+   - Packages them into installers (ZIP, DEB, DMG, MSI).
+   - Builds and packages the VS Code extension (`.vsix`).
+   - Creates a GitHub Release and uploads all artifacts.
+
+### Local Packaging
+
+You can test the packaging process locally using CPack:
+
+```bash
+# After building in Release mode
+cd build
+cpack -C Release
+```
+
+This will generate the installers in the `build/` directory.
+
+### Engineering Standards
+
+- **Commitlint**: Enforces conventional commit messages.
+- **Husky**: Runs pre-commit hooks (linting, formatting).
+- **Lint-staged**: Formats only modified files on commit.
+
+To set up the hooks locally:
+```bash
+npm install
+```

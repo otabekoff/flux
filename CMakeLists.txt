@@ -27,9 +27,15 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(FluxCompilerOptions)
 
 # ============================================================================
-# Find LLVM
+# Find Dependencies
 # ============================================================================
 find_package(LLVM REQUIRED CONFIG)
+
+# Resolve LibXml2 warning (often needed by LLVM's Windows builds)
+find_package(LibXml2 QUIET)
+if(NOT LIBXML2_FOUND)
+    message(STATUS "LibXml2 not found. This is optional but may be needed for some LLVM features.")
+endif()
 
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
@@ -152,3 +158,35 @@ if(FLUX_ENABLE_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+# ============================================================================
+# Packaging (CPack)
+# ============================================================================
+set(CPACK_PACKAGE_VENDOR "Otabek Sadiridinov")
+set(CPACK_PACKAGE_CONTACT "Otabek Sadiridinov")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Flux Compiler")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+
+# Windows configuration
+if(WIN32 AND NOT UNIX)
+    set(CPACK_GENERATOR "ZIP;NSIS")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "FluxCompiler")
+endif()
+
+# Linux configuration
+if(UNIX AND NOT APPLE)
+    set(CPACK_GENERATOR "TGZ;DEB")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Otabek Sadiridinov")
+endif()
+
+# macOS configuration
+if(APPLE)
+    set(CPACK_GENERATOR "DragNDrop")
+endif()
+
+include(CPack)

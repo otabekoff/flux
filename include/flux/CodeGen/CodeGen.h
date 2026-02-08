@@ -15,21 +15,21 @@ namespace flux {
 
 /// Output format for code generation.
 enum class OutputFormat {
-    LLVMIR,      // .ll — textual LLVM IR
-    Bitcode,     // .bc — LLVM bitcode
-    Assembly,    // .s  — native assembly
-    Object,      // .o  — native object file
-    Executable,  // linked executable
+  LLVMIR,     // .ll — textual LLVM IR
+  Bitcode,    // .bc — LLVM bitcode
+  Assembly,   // .s  — native assembly
+  Object,     // .o  — native object file
+  Executable, // linked executable
 };
 
 /// Options controlling code generation.
 struct CodeGenOptions {
-    std::string targetTriple;   // e.g. "x86_64-pc-windows-msvc"
-    std::string cpu = "generic";
-    std::string features;
-    OutputFormat outputFormat = OutputFormat::Object;
-    int optimizationLevel = 0;  // 0-3
-    bool debugInfo = false;
+  std::string targetTriple; // e.g. "x86_64-pc-windows-msvc"
+  std::string cpu = "generic";
+  std::string features;
+  OutputFormat outputFormat = OutputFormat::Object;
+  int optimizationLevel = 0; // 0-3
+  bool debugInfo = false;
 };
 
 /// Top-level code generation driver.
@@ -38,29 +38,29 @@ struct CodeGenOptions {
 /// assembly, or object code.
 class CodeGen {
 public:
-    CodeGen(DiagnosticEngine& diag, const CodeGenOptions& opts);
+  CodeGen(DiagnosticEngine &diag, const CodeGenOptions &opts);
 
-    /// Generate code for the given module.
-    /// Returns true on success.
-    bool generate(ast::Module& module);
+  /// Generate code for the given module.
+  /// Returns true on success.
+  bool generate(ast::Module &module);
 
-    /// Write the generated output to a file.
-    bool writeOutput(const std::string& filename);
+  /// Write the generated output to a file.
+  bool writeOutput(const std::string &filename);
 
-    /// Get the LLVM module (for inspection/testing).
-    llvm::Module* getLLVMModule() { return llvmModule_.get(); }
+  /// Get the LLVM module (for inspection/testing).
+  llvm::Module *getLLVMModule() { return llvmModule_.get(); }
 
 private:
-    bool initializeTarget();
-    bool runOptimizationPasses();
-    bool emitToFile(const std::string& filename);
+  bool initializeTarget();
+  bool runOptimizationPasses();
+  bool emitToFile(const std::string &filename);
 
-    DiagnosticEngine& diag_;
-    CodeGenOptions opts_;
+  DiagnosticEngine &diag_;
+  CodeGenOptions opts_;
 
-    llvm::LLVMContext context_;
-    std::unique_ptr<llvm::Module> llvmModule_;
-    llvm::TargetMachine* targetMachine_ = nullptr;
+  llvm::LLVMContext context_;
+  std::unique_ptr<llvm::Module> llvmModule_;
+  llvm::TargetMachine *targetMachine_ = nullptr;
 };
 
 } // namespace flux

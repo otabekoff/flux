@@ -1,0 +1,43 @@
+name: Multi-Platform CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up LLVM
+      if: matrix.os != 'windows-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y llvm-dev clang ninja-build
+        
+    - name: Set up LLVM (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        # In a real environment, we'd use a specific LLVM version
+        # For CI, we'll try to find the installed one or provide a simple build
+        echo "Windows build requires LLVM in llvm-dev/ as per README.dev.md"
+        # Note: Actual CI setup would likely use a custom action or chocolatey
+        # but for this "professional" template, we assume standard runners.
+        
+    - name: Configure CMake
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        
+    - name: Build
+      run: cmake --build build
+
+    - name: Test
+      run: ctest --test-dir build --output-on-failure

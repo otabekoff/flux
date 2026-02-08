@@ -27,53 +27,53 @@ namespace flux {
 ///
 class TypeChecker {
 public:
-    TypeChecker(DiagnosticEngine& diag, const Scope& scope);
+  TypeChecker(DiagnosticEngine &diag, const Scope &scope);
 
-    /// Check types for an entire module.
-    void check(ast::Module& module);
+  /// Check types for an entire module.
+  void check(ast::Module &module);
 
 private:
-    // Declaration checking
-    void checkDecl(ast::Decl& decl);
-    void checkFuncDecl(ast::FuncDecl& decl);
-    void checkStructDecl(ast::StructDecl& decl);
-    void checkClassDecl(ast::ClassDecl& decl);
-    void checkEnumDecl(ast::EnumDecl& decl);
-    void checkTraitDecl(ast::TraitDecl& decl);
-    void checkImplDecl(ast::ImplDecl& decl);
+  // Declaration checking
+  void checkDecl(ast::Decl &decl);
+  void checkFuncDecl(ast::FuncDecl &decl);
+  void checkStructDecl(ast::StructDecl &decl);
+  void checkClassDecl(ast::ClassDecl &decl);
+  void checkEnumDecl(ast::EnumDecl &decl);
+  void checkTraitDecl(ast::TraitDecl &decl);
+  void checkImplDecl(ast::ImplDecl &decl);
 
-    // Statement checking
-    void checkStmt(ast::Stmt& stmt);
-    void checkLetStmt(ast::LetStmt& stmt);
-    void checkReturnStmt(ast::ReturnStmt& stmt);
-    void checkIfStmt(ast::IfStmt& stmt);
-    void checkForStmt(ast::ForStmt& stmt);
-    void checkWhileStmt(ast::WhileStmt& stmt);
-    void checkBlockStmt(ast::BlockStmt& stmt);
+  // Statement checking
+  void checkStmt(ast::Stmt &stmt);
+  void checkLetStmt(ast::LetStmt &stmt);
+  void checkReturnStmt(ast::ReturnStmt &stmt);
+  void checkIfStmt(ast::IfStmt &stmt);
+  void checkForStmt(ast::ForStmt &stmt);
+  void checkWhileStmt(ast::WhileStmt &stmt);
+  void checkBlockStmt(ast::BlockStmt &stmt);
 
-    // Expression checking — returns the inferred type name
-    std::string checkExpr(ast::Expr& expr);
-    std::string checkBinaryExpr(ast::BinaryExpr& expr);
-    std::string checkCallExpr(ast::CallExpr& expr);
-    std::string checkIdentExpr(ast::IdentExpr& expr);
+  // Expression checking — returns the inferred type name
+  std::string checkExpr(ast::Expr &expr);
+  std::string checkBinaryExpr(ast::BinaryExpr &expr);
+  std::string checkCallExpr(ast::CallExpr &expr);
+  std::string checkIdentExpr(ast::IdentExpr &expr);
 
-    // Type utilities
-    bool isValidType(const std::string& typeName) const;
-    bool typesCompatible(const std::string& expected,
-                         const std::string& actual) const;
-    std::string typeToString(const ast::TypeNode& type) const;
+  // Type utilities
+  bool isValidType(const std::string &typeName) const;
+  bool typesCompatible(const std::string &expected,
+                       const std::string &actual) const;
+  std::string typeToString(const ast::TypeNode &type) const;
 
-    // Built-in type registry
-    void registerBuiltinTypes();
+  // Built-in type registry
+  void registerBuiltinTypes();
 
-    DiagnosticEngine& diag_;
-    const Scope& scope_;
+  DiagnosticEngine &diag_;
+  const Scope &scope_;
 
-    // Known types (built-in + user-defined)
-    std::unordered_set<std::string> knownTypes_;
+  // Known types (built-in + user-defined)
+  std::unordered_set<std::string> knownTypes_;
 
-    // Current function return type (for checking return statements)
-    std::string currentReturnType_;
+  // Current function return type (for checking return statements)
+  std::string currentReturnType_;
 };
 
 } // namespace flux

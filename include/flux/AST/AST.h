@@ -37,13 +37,13 @@ using ExprList = std::vector<ExprPtr>;
 /// Base class for all AST nodes.
 class ASTNode {
 public:
-    virtual ~ASTNode() = default;
+  virtual ~ASTNode() = default;
 
-    SourceLocation location;
+  SourceLocation location;
 
 protected:
-    ASTNode() = default;
-    explicit ASTNode(SourceLocation loc) : location(loc) {}
+  ASTNode() = default;
+  explicit ASTNode(SourceLocation loc) : location(loc) {}
 };
 
 // ============================================================================
@@ -52,10 +52,10 @@ protected:
 
 /// Represents a complete Flux source file / module.
 struct Module {
-    std::string name;                  // e.g., "my_project::services::user_service"
-    std::vector<std::string> imports;  // fully qualified import paths
-    DeclList declarations;             // top-level declarations
-    SourceLocation location;
+  std::string name; // e.g., "my_project::services::user_service"
+  std::vector<std::string> imports; // fully qualified import paths
+  DeclList declarations;            // top-level declarations
+  SourceLocation location;
 };
 
 } // namespace ast
