@@ -1,0 +1,11 @@
+[package]
+name = "flux"
+version = "0.1.0"
+authors = ["Flux Contributors"]
+license = "MIT"
+edition = "2026"
+description = "The Flux programming language compiler"
+
+[build]
+mode = "debug"
+target = "x86_64-pc-windows-msvc"
