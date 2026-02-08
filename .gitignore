@@ -51,3 +51,9 @@ Thumbs.db
 node_modules/
 .vitepress/cache/
 .vitepress/dist/
+
+# Signing keys
+cosign.key
+cosign.pub
+*.sig
+*.pem

@@ -18,22 +18,36 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest, macos-latest, macos-14]
+                arch: [amd64, arm64]
+                exclude:
+                    - os: windows-latest
+                      arch: arm64 # MSYS2 ARM64 support is experimental in CI
+                    - os: macos-latest
+                      arch: arm64 # macos-latest is x64
+                    - os: macos-14
+                      arch: amd64 # macos-14 is arm64 (m1)
 
         steps:
             - uses: actions/checkout@v4
+
+            - name: Install Cosign
+              uses: sigstore/cosign-installer@v3.8.1
 
             - name: Set up LLVM (Linux)
               if: matrix.os == 'ubuntu-latest'
               run: |
                   sudo apt-get update
-                  sudo apt-get install -y llvm-dev clang ninja-build
+                  sudo apt-get install -y llvm-18-dev clang-18 ninja-build
+                  echo "CC=clang-18" >> $GITHUB_ENV
+                  echo "CXX=clang++-18" >> $GITHUB_ENV
+                  echo "LLVM_DIR=/usr/lib/llvm-18/lib/cmake/llvm" >> $GITHUB_ENV
 
             - name: Set up LLVM (macOS)
               if: startsWith(matrix.os, 'macos-')
               run: |
-                  brew install llvm ninja
-                  echo "LLVM_DIR=$(brew --prefix llvm)/lib/cmake/llvm" >> $GITHUB_ENV
-                  echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+                  brew install llvm@18 ninja
+                  echo "LLVM_DIR=$(brew --prefix llvm@18)/lib/cmake/llvm" >> $GITHUB_ENV
+                  echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
 
             - uses: msys2/setup-msys2@v2
               if: matrix.os == 'windows-latest'
@@ -55,42 +69,38 @@ jobs:
                   cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
                   cmake --build build
 
-            - name: Configure and Build (macOS)
-              if: startsWith(matrix.os, 'macos-')
-              run: |
-                  cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-                  cmake --build build
-
-            - name: Configure and Build (Linux)
-              if: matrix.os == 'ubuntu-latest'
-              run: |
-                  cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
-                  cmake --build build
-
-            - name: Package (Windows)
-              if: matrix.os == 'windows-latest'
-              shell: msys2 {0}
-              run: |
-                  cd build
-                  cpack -C Release
-
-            - name: Package (Unix)
+            - name: Configure and Build (Unix)
               if: matrix.os != 'windows-latest'
+              run: |
+                  cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+                    -DLLVM_DIR=$LLVM_DIR
+                  cmake --build build
+
+            - name: Package
               run: |
                   cd build
                   cpack -C Release
 
             - name: Build VS Code Extension
-              if: matrix.os == 'ubuntu-latest'
+              if: matrix.os == 'ubuntu-latest' && matrix.arch == 'amd64'
               run: |
                   cd editors/vscode
                   npm install
                   npx vsce package
 
+            - name: Sign Binaries (Keyless Cosign)
+              if: startsWith(github.ref, 'refs/tags/')
+              shell: bash
+              run: |
+                  find build -maxdepth 1 -name "FluxCompiler-*" -type f | while read file; do
+                    cosign sign-blob --yes "$file" --output-signature "$file.sig" --output-certificate "$file.pem"
+                  done
+
             - name: Create Release
               uses: softprops/action-gh-release@v2
               if: startsWith(github.ref, 'refs/tags/')
               with:
+                  generate_release_notes: true
                   files: |
                       build/FluxCompiler-*
                       editors/vscode/*.vsix

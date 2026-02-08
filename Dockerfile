@@ -1,45 +1,45 @@
-# Build stage
+# -- Stage 1: Build --
 FROM ubuntu:24.04 AS builder
 
-# Prevent interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies
+# Install build dependencies
 RUN apt-get update && apt-get install -y \
     cmake \
     ninja-build \
-    llvm-18-dev \
     clang-18 \
+    llvm-18-dev \
     libxml2-dev \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Set clang-18 as default
+# Set clang-18 as default compiler
 ENV CC=clang-18
 ENV CXX=clang++-18
 
 WORKDIR /app
 COPY . .
 
-# Build Flux
+# Configure and Build
 RUN cmake -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
+    -DFLUX_ENABLE_TESTS=ON \
     -DLLVM_DIR=/usr/lib/llvm-18/lib/cmake/llvm
-RUN cmake --build build --target flux runtime
+RUN cmake --build build
 
-# Final stage
+# -- Stage 2: Runtime & Test --
 FROM ubuntu:24.04
 
 RUN apt-get update && apt-get install -y \
-    libstdc++6 \
+    libllvm18 \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /usr/local/bin
-COPY --from=builder /app/build/tools/flux/flux .
+WORKDIR /app
+COPY --from=builder /app/build/tools/flux/flux /usr/local/bin/
 COPY --from=builder /app/build/runtime/libFluxRuntime.a /usr/local/lib/
+COPY --from=builder /app/include /usr/local/include/flux
 
-# Set up runner environment
-ENV PATH="/usr/local/bin:${PATH}"
+# Verify installation
+RUN flux --version
 
 ENTRYPOINT ["flux"]
-CMD ["--help"]

@@ -4,11 +4,11 @@ Instructions for building, testing, and developing the Flux compiler.
 
 ## Prerequisites
 
-| Tool | Version | Notes |
-|------|---------|-------|
-| **CMake** | ≥ 3.20 | Build system generator |
-| **Ninja** | any | Build backend |
-| **LLVM** | 18.x | Prebuilt development libraries |
+| Tool               | Version                         | Notes                                                             |
+| ------------------ | ------------------------------- | ----------------------------------------------------------------- |
+| **CMake**          | ≥ 3.20                          | Build system generator                                            |
+| **Ninja**          | any                             | Build backend                                                     |
+| **LLVM**           | 18.x                            | Prebuilt development libraries                                    |
 | **C++20 compiler** | MSVC 2022 / GCC 13+ / Clang 17+ | Must support C++20 and build without RTTI (`/GR-` or `-fno-rtti`) |
 
 ### Windows-Specific
@@ -17,9 +17,25 @@ Instructions for building, testing, and developing the Flux compiler.
 - Or standalone MSVC Build Tools 2022
 - The DIA SDK is auto-detected from your VS installation
 
+## Dockerized Testing (Linux)
+
+For a clean, reproducible Linux environment, use the provided Docker setup:
+
+```bash
+# Build and run all internal tests
+./scripts/docker-test.sh
+```
+
+Or manually:
+
+```bash
+docker build -t flux-compiler .
+docker run --rm flux-compiler --version
+```
+
 ## Getting LLVM
 
-Download the LLVM 18 prebuilt development package and extract it to `llvm-dev/` at the project root:
+Download the **LLVM 18** prebuilt development package and extract it to `llvm-dev/` at the project root. LLVM 18 is the standard target for professional Flux distribution.
 
 ```
 flux/
@@ -84,12 +100,12 @@ cmake --build build
 
 ## Build Outputs
 
-| Artifact | Path |
-|----------|------|
-| Compiler binary | `build/tools/flux/flux.exe` |
+| Artifact         | Path                              |
+| ---------------- | --------------------------------- |
+| Compiler binary  | `build/tools/flux/flux.exe`       |
 | Unit test binary | `build/tests/flux_unit_tests.exe` |
-| Runtime library | `build/runtime/` |
-| Compile commands | `build/compile_commands.json` |
+| Runtime library  | `build/runtime/`                  |
+| Compile commands | `build/compile_commands.json`     |
 
 ## Running the Compiler
 
@@ -159,22 +175,22 @@ cd build && ctest -R SemaTest --output-on-failure
 
 ### Test Structure
 
-| Directory | Framework | Coverage |
-|-----------|-----------|----------|
-| `tests/unit/LexerTest.cpp` | GoogleTest | Tokenizer — literals, keywords, operators, comments, locations |
+| Directory                   | Framework  | Coverage                                                       |
+| --------------------------- | ---------- | -------------------------------------------------------------- |
+| `tests/unit/LexerTest.cpp`  | GoogleTest | Tokenizer — literals, keywords, operators, comments, locations |
 | `tests/unit/ParserTest.cpp` | GoogleTest | Parser — declarations, expressions, statements, error recovery |
-| `tests/unit/SemaTest.cpp` | GoogleTest | Semantic analysis — name resolution, duplicates, scoping |
-| `tests/lit/` | LLVM lit | End-to-end compiler driver tests |
+| `tests/unit/SemaTest.cpp`   | GoogleTest | Semantic analysis — name resolution, duplicates, scoping       |
+| `tests/lit/`                | LLVM lit   | End-to-end compiler driver tests                               |
 
 ## CMake Options
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `FLUX_ENABLE_TESTS` | `ON` | Build unit tests |
-| `FLUX_ENABLE_LIT` | `ON` | Enable LLVM lit tests |
-| `FLUX_ENABLE_ASAN` | `OFF` | AddressSanitizer (Debug, GCC/Clang only) |
-| `LLVM_DIR` | — | Path to `LLVMConfig.cmake` directory |
-| `CMAKE_BUILD_TYPE` | — | `Debug`, `Release`, `RelWithDebInfo` |
+| Variable            | Default | Description                              |
+| ------------------- | ------- | ---------------------------------------- |
+| `FLUX_ENABLE_TESTS` | `ON`    | Build unit tests                         |
+| `FLUX_ENABLE_LIT`   | `ON`    | Enable LLVM lit tests                    |
+| `FLUX_ENABLE_ASAN`  | `OFF`   | AddressSanitizer (Debug, GCC/Clang only) |
+| `LLVM_DIR`          | —       | Path to `LLVMConfig.cmake` directory     |
+| `CMAKE_BUILD_TYPE`  | —       | `Debug`, `Release`, `RelWithDebInfo`     |
 
 ## Project Architecture
 
@@ -182,16 +198,16 @@ cd build && ctest -R SemaTest --output-on-failure
 Source → Lexer → Parser → AST → Sema → CodeGen → LLVM IR → Native Code
 ```
 
-| Component | Library | Description |
-|-----------|---------|-------------|
-| **Lexer** | `FluxLexer` | Tokenizes `.fl` source into a token stream |
-| **Parser** | `FluxParser` | Recursive-descent parser producing an AST |
-| **AST** | `FluxAST` | Abstract syntax tree nodes and visitors |
-| **Sema** | `FluxSema` | Name resolution and type checking |
-| **CodeGen** | `FluxCodeGen` | LLVM IR emission from the AST |
-| **Common** | `FluxCommon` | Source locations, diagnostics engine |
-| **Runtime** | `FluxRuntime` | Minimal C runtime (panic, alloc, I/O) |
-| **Driver** | `flux` (exe) | CLI entry point, option parsing, pipeline |
+| Component   | Library       | Description                                |
+| ----------- | ------------- | ------------------------------------------ |
+| **Lexer**   | `FluxLexer`   | Tokenizes `.fl` source into a token stream |
+| **Parser**  | `FluxParser`  | Recursive-descent parser producing an AST  |
+| **AST**     | `FluxAST`     | Abstract syntax tree nodes and visitors    |
+| **Sema**    | `FluxSema`    | Name resolution and type checking          |
+| **CodeGen** | `FluxCodeGen` | LLVM IR emission from the AST              |
+| **Common**  | `FluxCommon`  | Source locations, diagnostics engine       |
+| **Runtime** | `FluxRuntime` | Minimal C runtime (panic, alloc, I/O)      |
+| **Driver**  | `flux` (exe)  | CLI entry point, option parsing, pipeline  |
 
 Each library is built as a static library. The driver links them all together with LLVM.
 
@@ -208,24 +224,24 @@ The `.vscode/` directory is pre-configured. After cloning:
 
 ### Tasks (`Ctrl+Shift+P` → "Run Task")
 
-| Task | Description |
-|------|-------------|
-| Build Flux | Build the compiler (default build task) |
-| Run Tests | Build + run all unit tests |
-| Clean | Clean build artifacts |
-| Reconfigure (Clean) | Fresh CMake reconfigure |
-| Run Flux (current file) | Compile the open `.fl` file |
-| Dump Tokens (current file) | Show token stream |
-| Dump AST (current file) | Show AST |
+| Task                       | Description                             |
+| -------------------------- | --------------------------------------- |
+| Build Flux                 | Build the compiler (default build task) |
+| Run Tests                  | Build + run all unit tests              |
+| Clean                      | Clean build artifacts                   |
+| Reconfigure (Clean)        | Fresh CMake reconfigure                 |
+| Run Flux (current file)    | Compile the open `.fl` file             |
+| Dump Tokens (current file) | Show token stream                       |
+| Dump AST (current file)    | Show AST                                |
 
 ### Debug Configurations (`F5`)
 
-| Configuration | Description |
-|---------------|-------------|
-| Debug Flux (current file) | Debug compiler with currently open `.fl` file |
-| Debug Flux (hello.fl) | Debug compiler with `examples/hello.fl --dump-ast` |
-| Debug Flux (dump tokens) | Debug compiler with `--dump-tokens` |
-| Debug Unit Tests | Debug the GoogleTest binary |
+| Configuration             | Description                                        |
+| ------------------------- | -------------------------------------------------- |
+| Debug Flux (current file) | Debug compiler with currently open `.fl` file      |
+| Debug Flux (hello.fl)     | Debug compiler with `examples/hello.fl --dump-ast` |
+| Debug Flux (dump tokens)  | Debug compiler with `--dump-tokens`                |
+| Debug Unit Tests          | Debug the GoogleTest binary                        |
 
 ## Adding a New Compiler Pass
 
@@ -320,15 +336,22 @@ Before tagging a new version for distribution, ensure the following files are up
 4.  **`CHANGELOG.md`**: Ensure all notable changes are documented.
 
 **Recommended Tooling**:
+
 - Use `npm version <patch|minor|major>` to automatically update `package.json`.
 - Use `npm run commit` for conventional commits, which compatible with `semantic-release` for automated changelog generation and tagging.
 
 ### Local Environment Recommendation
 
 It is highly recommended to align your local environment with the CI production build:
+
 - **LLVM Version**: Use **LLVM 18.x**. It is the stable target for all distribution packages.
 - **Tools**: Ensure `Ninja` and a C++20 compatible compiler are in your PATH.
 
 ```
 gh release delete v0.1.0 --repo otabekoff/flux --yes && git tag -d v0.1.0 && git push origin :refs/tags/v0.1.0 && git tag v0.1.0 && git push origin v0.1.0
+```
+
+```
+cmake -B build -G Ninja
+cmake --build build
 ```
