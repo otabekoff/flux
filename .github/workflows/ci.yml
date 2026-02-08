@@ -36,11 +36,11 @@ jobs:
         choco install llvm ninja
         $llvm_bin = "C:/Program Files/LLVM/bin"
         if (Test-Path "$llvm_bin/llvm-config.exe") {
-          echo "$llvm_bin" >> $GITHUB_PATH
+          echo "$llvm_bin" >> $env:GITHUB_PATH
           $cmakedir = & "$llvm_bin/llvm-config.exe" --cmakedir
-          $cmakedir = $cmakedir -replace '\\', '/'
-          echo "LLVM_DIR=$cmakedir" >> $GITHUB_ENV
-          echo "CMAKE_PREFIX_PATH=$cmakedir" >> $GITHUB_ENV
+          $cmakedir = $cmakedir.Trim() -replace '\\', '/'
+          echo "LLVM_DIR=$cmakedir" >> $env:GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$cmakedir" >> $env:GITHUB_ENV
         }
 
     - name: Configure CMake
