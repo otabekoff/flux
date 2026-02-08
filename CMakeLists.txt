@@ -262,64 +262,79 @@ set(CPACK_PACKAGE_DESCRIPTION "Flux is a modern, statically typed programming la
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/otabekoff/flux")
 
 # Architecture detection for package naming
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64|x86_64|AMD64")
-    set(FLUX_ARCH "x86_64")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
-    set(FLUX_ARCH "arm64")
-else()
-    set(FLUX_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+if(NOT FLUX_ARCH)
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64|x86_64|AMD64")
+        set(FLUX_ARCH "x86_64")
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
+        set(FLUX_ARCH "arm64")
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "i.86|x86")
+        set(FLUX_ARCH "x86")
+    else()
+        set(FLUX_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+    endif()
 endif()
+set(FLUX_ARCH ${FLUX_ARCH} CACHE STRING "Target architecture for packaging")
 
-if(WIN32)
-    set(FLUX_OS "win")
-elseif(APPLE)
-    set(FLUX_OS "macos")
-else()
-    set(FLUX_OS "linux")
+if(NOT FLUX_OS)
+    if(WIN32)
+        set(FLUX_OS "windows")
+    elseif(APPLE)
+        set(FLUX_OS "macos")
+    else()
+        set(FLUX_OS "linux")
+    endif()
 endif()
+set(FLUX_OS ${FLUX_OS} CACHE STRING "Target OS for packaging")
+
+# --- Packaging (CPack) ---
+set(CPACK_PACKAGE_NAME "flux")
+set(CPACK_PACKAGE_VENDOR "Flux Project")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Flux Programming Language Compiler")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_PACKAGE_CONTACT "sadiridinovotabek@gmail.com")
 
 set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}-${FLUX_OS}-${FLUX_ARCH}")
 
-# Windows configuration
-if(WIN32 AND NOT UNIX)
-    set(CPACK_GENERATOR "ZIP;NSIS")
-    set(CPACK_PACKAGE_INSTALL_DIRECTORY "FluxCompiler")
-    set(CPACK_NSIS_DISPLAY_NAME "Flux Compiler")
+# Windows Specific (NSIS & MSI/WiX)
+if(WIN32)
+    set(CPACK_GENERATOR "ZIP;NSIS;WIX")
+    set(CPACK_NSIS_PACKAGE_NAME "Flux Compiler")
+    set(CPACK_NSIS_DISPLAY_NAME "Flux Compiler v${PROJECT_VERSION}")
     set(CPACK_NSIS_HELP_LINK "https://github.com/otabekoff/flux")
-    set(CPACK_NSIS_URL_INFO_ABOUT "https://github.com/otabekoff/flux")
-    set(CPACK_NSIS_CONTACT "Otabek Sadiridinov")
+    set(CPACK_WIX_UPGRADE_GUID "af10e180-b9d1-4e65-83e0-834e404e0960")
     set(CPACK_NSIS_MODIFY_PATH ON)
-    
-    # NSIS Icons (MUI)
     set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/logo128x128.ico")
     set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/logo128x128.ico")
-    set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\flux.exe")
     
-    # NSIS Shortcuts (Start Menu and Desktop)
-    set(CPACK_NSIS_MENU_LINKS
-        "bin/flux.exe" "Flux Compiler"
-        "https://github.com/otabekoff/flux" "Flux Documentation"
-    )
+    # NSIS Shortcut logic
+    set(CPACK_NSIS_MENU_LINKS "bin/flux.exe" "Flux Compiler")
     set(CPACK_NSIS_CREATE_ICONS_EXTRA "
         CreateShortCut '$DESKTOP/Flux Compiler.lnk' '$INSTDIR/bin/flux.exe' '' '$INSTDIR/assets/logo128x128.ico'
     ")
     set(CPACK_NSIS_DELETE_ICONS_EXTRA "
         Delete '$DESKTOP/Flux Compiler.lnk'
     ")
-    
-    # Install the assets into the installer so they are available for the shortcut
     install(DIRECTORY assets DESTINATION .)
 endif()
 
-# Linux configuration
+# Linux Specific (DEB & RPM)
 if(UNIX AND NOT APPLE)
-    set(CPACK_GENERATOR "TGZ;DEB")
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Otabek Sadiridinov")
+    set(CPACK_GENERATOR "TGZ;DEB;RPM")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Otabek <sadiridinovotabek@gmail.com>")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
+    set(CPACK_RPM_PACKAGE_LICENSE "Apache-2.0")
+    set(CPACK_RPM_PACKAGE_GROUP "Development/Languages")
+    set(CPACK_RPM_PACKAGE_RELEASE 1)
 endif()
 
-# macOS configuration
+# macOS Specific (DMG)
 if(APPLE)
-    set(CPACK_GENERATOR "DragNDrop")
+    set(CPACK_GENERATOR "TGZ;DragNDrop")
+    set(CPACK_DMG_VOLUME_NAME "Flux")
+    set(CPACK_DMG_FORMAT "UDZO")
 endif()
 
 include(CPack)
