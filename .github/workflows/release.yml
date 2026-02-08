@@ -25,9 +25,16 @@ jobs:
     - name: Set up LLVM (macOS)
       if: matrix.os == 'macos-latest'
       run: |
-        brew update
         brew install llvm ninja
         echo "LLVM_DIR=$(brew --prefix llvm)/lib/cmake/llvm" >> $GITHUB_ENV
+        echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+
+    - name: Set up LLVM (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        choco install llvm ninja
+        echo "LLVM_DIR=C:/Program Files/LLVM/lib/cmake/llvm" >> $GITHUB_ENV
+        echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH
 
     - name: Set up LLVM (Windows)
       if: matrix.os == 'windows-latest'

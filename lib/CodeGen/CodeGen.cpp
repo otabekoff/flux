@@ -42,7 +42,7 @@ bool CodeGen::initializeTarget() {
         tripleStr = llvm::sys::getDefaultTargetTriple();
     }
     llvm::Triple triple(tripleStr);
-    llvmModule_->setTargetTriple(triple);
+    llvmModule_->setTargetTriple(triple.getTriple());
 
     std::string error;
     auto* target = llvm::TargetRegistry::lookupTarget(tripleStr, error);
@@ -63,7 +63,7 @@ bool CodeGen::initializeTarget() {
     }
 
     targetMachine_ = target->createTargetMachine(
-        triple, opts_.cpu, opts_.features, targetOpts, relocModel,
+        triple.getTriple(), opts_.cpu, opts_.features, targetOpts, relocModel,
         std::nullopt, cgOptLevel);
 
     if (!targetMachine_) {
