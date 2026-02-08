@@ -13,6 +13,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Build Options
 # ============================================================================
 option(FLUX_ENABLE_TESTS "Enable test builds" ON)
+if(FLUX_ENABLE_TESTS)
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+    set(INSTALL_GMOCK OFF CACHE BOOL "" FORCE)
+endif()
 option(FLUX_ENABLE_LIT "Enable LLVM lit tests" ON)
 option(FLUX_ENABLE_ASAN "Enable AddressSanitizer (Debug)" OFF)
 
@@ -161,8 +165,6 @@ add_subdirectory(runtime)
 # Tests
 # ============================================================================
 if(FLUX_ENABLE_TESTS)
-    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-    set(INSTALL_GMOCK OFF CACHE BOOL "" FORCE)
     enable_testing()
     add_subdirectory(tests)
 endif()
@@ -217,10 +219,10 @@ if(WIN32 AND NOT UNIX)
         "https://github.com/otabekoff/flux" "Flux Documentation"
     )
     set(CPACK_NSIS_CREATE_ICONS_EXTRA "
-        CreateShortCut '$DESKTOP\\Flux Compiler.lnk' '$INSTDIR\\bin\\flux.exe'
+        CreateShortCut '$DESKTOP\\\\Flux Compiler.lnk' '$INSTDIR\\\\bin\\\\flux.exe'
     ")
     set(CPACK_NSIS_DELETE_ICONS_EXTRA "
-        Delete '$DESKTOP\\Flux Compiler.lnk'
+        Delete '$DESKTOP\\\\Flux Compiler.lnk'
     ")
 endif()
 
