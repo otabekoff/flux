@@ -35,19 +35,13 @@ jobs:
           - os: windows
             arch: x86_64
             runner: windows-latest
-          - os: windows
-            arch: x86
-            runner: windows-latest
-          - os: windows
-            arch: arm64
-            runner: windows-latest
           # --- macOS Matrix ---
           - os: macos
             arch: aarch64
             runner: macos-14
           - os: macos
             arch: x86_64
-            runner: macos-12
+            runner: macos-14
           # --- BSD Matrix (Experimental) ---
           - os: freebsd
             arch: x86_64
@@ -88,7 +82,18 @@ jobs:
             mingw-w64-clang-x86_64-ninja
             mingw-w64-clang-x86_64-cmake
             mingw-w64-x86_64-nsis
-            mingw-w64-x86_64-wixtoolset
+
+      - name: Install WiX Toolset
+        if: matrix.os == 'windows'
+        uses: crazy-max/ghaction-chocolatey@v3
+        with:
+          args: install wixtoolset --no-progress -y
+
+      - name: Set up Windows Paths
+        if: matrix.os == 'windows'
+        run: |
+          echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
+          echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" >> $GITHUB_PATH
 
       # --- macOS Setup ---
       - name: Set up LLVM (macOS)
