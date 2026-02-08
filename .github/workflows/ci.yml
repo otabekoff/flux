@@ -17,20 +17,24 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up LLVM
-      if: matrix.os != 'windows-latest'
+    - name: Set up LLVM (Linux)
+      if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt-get update
         sudo apt-get install -y llvm-dev clang ninja-build
-        
+
+    - name: Set up LLVM (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        brew update
+        brew install llvm ninja
+        echo "LLVM_DIR=$(brew --prefix llvm)/lib/cmake/llvm" >> $GITHUB_ENV
+
     - name: Set up LLVM (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        # In a real environment, we'd use a specific LLVM version
-        # For CI, we'll try to find the installed one or provide a simple build
-        echo "Windows build requires LLVM in llvm-dev/ as per README.dev.md"
-        # Note: Actual CI setup would likely use a custom action or chocolatey
-        # but for this "professional" template, we assume standard runners.
+        choco install llvm ninja
+        echo "LLVM_DIR=C:/Program Files/LLVM/lib/cmake/llvm" >> $GITHUB_ENV
         
     - name: Configure CMake
       run: |
