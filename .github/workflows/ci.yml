@@ -38,7 +38,7 @@ jobs:
         echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH
 
     - name: Configure CMake
-      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR="C:/Program Files/LLVM/lib/cmake/llvm"
         
     - name: Build
       run: cmake --build build
