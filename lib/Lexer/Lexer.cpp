@@ -600,7 +600,7 @@ Token Lexer::nextToken() {
             uint32_t savedLine = line_;
             uint32_t savedColumn = column_;
 
-            char first = advance();
+            advance(); // consume the first character
             if (!isAtEnd() && peek() == '\'') {
                 // It's a char literal like 'a'
                 current_ = savedCurrent;

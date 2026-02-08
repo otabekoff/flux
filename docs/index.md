@@ -5,6 +5,9 @@ hero:
   name: Flux
   text: A Modern Systems Language
   tagline: Production-ready, explicitly typed, with ownership & borrowing — no hidden stuff.
+  image:
+    src: /logo.svg
+    alt: Flux Logo
   actions:
     - theme: brand
       text: Get Started

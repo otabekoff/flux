@@ -12,6 +12,16 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# Suppress warnings from GoogleTest headers (third-party code)
+get_target_property(_gtest_inc gtest INTERFACE_INCLUDE_DIRECTORIES)
+set_target_properties(gtest PROPERTIES
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${_gtest_inc}")
+set_target_properties(gtest_main PROPERTIES
+    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${_gtest_inc}")
+# Suppress warnings in gtest's own compilation
+target_compile_options(gtest PRIVATE $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>)
+target_compile_options(gmock PRIVATE $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>)
+
 enable_testing()
 
 # --------------------------------------------------------------------------

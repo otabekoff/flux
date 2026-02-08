@@ -200,6 +200,17 @@ void IREmitter::emitLetStmt(ast::LetStmt& stmt) {
     if (stmt.initializer) {
         auto* initVal = emitExpr(*stmt.initializer);
         if (initVal) {
+            // Insert implicit integer cast if the initializer type differs
+            if (varType->isIntegerTy() && initVal->getType()->isIntegerTy() &&
+                varType != initVal->getType()) {
+                unsigned varBits = varType->getIntegerBitWidth();
+                unsigned initBits = initVal->getType()->getIntegerBitWidth();
+                if (varBits < initBits) {
+                    initVal = builder_.CreateTrunc(initVal, varType, "trunc");
+                } else {
+                    initVal = builder_.CreateSExt(initVal, varType, "sext");
+                }
+            }
             builder_.CreateStore(initVal, alloca);
         }
     }
@@ -386,7 +397,7 @@ llvm::Value* IREmitter::emitFloatLiteral(ast::FloatLiteralExpr& expr) {
 }
 
 llvm::Value* IREmitter::emitStringLiteral(ast::StringLiteralExpr& expr) {
-    return builder_.CreateGlobalStringPtr(expr.value, "str");
+    return builder_.CreateGlobalString(expr.value, "str");
 }
 
 llvm::Value* IREmitter::emitBoolLiteral(ast::BoolLiteralExpr& expr) {
@@ -413,6 +424,19 @@ llvm::Value* IREmitter::emitBinaryExpr(ast::BinaryExpr& expr) {
     auto* lhs = emitExpr(*expr.lhs);
     auto* rhs = emitExpr(*expr.rhs);
     if (!lhs || !rhs) return nullptr;
+
+    // Coerce integer types to match (e.g., i32 op i64 → widen to i64,
+    // or truncate the literal side to match the variable side)
+    if (lhs->getType()->isIntegerTy() && rhs->getType()->isIntegerTy() &&
+        lhs->getType() != rhs->getType()) {
+        unsigned lhsBits = lhs->getType()->getIntegerBitWidth();
+        unsigned rhsBits = rhs->getType()->getIntegerBitWidth();
+        if (lhsBits > rhsBits) {
+            rhs = builder_.CreateSExt(rhs, lhs->getType(), "sext");
+        } else {
+            lhs = builder_.CreateSExt(lhs, rhs->getType(), "sext");
+        }
+    }
 
     // Integer operations (default for now)
     bool isFloat = lhs->getType()->isFloatingPointTy();

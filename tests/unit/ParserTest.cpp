@@ -13,14 +13,6 @@ using namespace flux;
 // -----------------------------------------------------------------------
 // Helper
 // -----------------------------------------------------------------------
-static ast::Module parse(std::string_view source) {
-    DiagnosticEngine diag;
-    Lexer lexer(source, "<test>", diag);
-    Parser parser(lexer, diag);
-    auto module = parser.parseModule();
-    return std::move(*module);
-}
-
 static ast::Module parseExpectNoErrors(std::string_view source) {
     DiagnosticEngine diag;
     Lexer lexer(source, "<test>", diag);

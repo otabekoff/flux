@@ -5,6 +5,9 @@
   "version": "0.1.0",
   "publisher": "flux-lang",
   "license": "MIT",
+  "scripts": {
+    "pack": "vsce package && code --install-extension flux-lang-0.1.0.vsix"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -50,5 +53,8 @@
         "path": "./snippets/flux.json"
       }
     ]
+  },
+  "dependencies": {
+    "@vscode/vsce": "^3.7.1"
   }
 }

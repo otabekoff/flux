@@ -45,3 +45,9 @@ Thumbs.db
 *.tmp
 *.bak
 *.orig
+
+
+# Vitepress
+node_modules/
+.vitepress/cache/
+.vitepress/dist/

@@ -37,7 +37,8 @@ message(STATUS "LLVM include dirs: ${LLVM_INCLUDE_DIRS}")
 message(STATUS "LLVM libraries dir: ${LLVM_LIBRARY_DIRS}")
 message(STATUS "LLVM definitions: ${LLVM_DEFINITIONS}")
 
-include_directories(${LLVM_INCLUDE_DIRS})
+# Treat LLVM headers as system headers to suppress warnings from them
+include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
 link_directories(${LLVM_LIBRARY_DIRS})
 
 # Auto-detect DIA SDK for MSVC (needed by LLVM prebuilts)

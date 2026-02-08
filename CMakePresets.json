@@ -3,39 +3,53 @@
   "cmakeMinimumRequired": { "major": 3, "minor": 20, "patch": 0 },
   "configurePresets": [
     {
-      "name": "default",
-      "displayName": "Default (Debug, Ninja)",
-      "description": "Debug build with Ninja generator",
+      "name": "base",
+      "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "C:/Program Files/LLVM/bin/clang.exe",
+        "CMAKE_CXX_COMPILER": "C:/Program Files/LLVM/bin/clang++.exe",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "LLVM_DIR": "${sourceDir}/llvm-dev/lib/cmake/llvm"
+      }
+    },
+    {
+      "name": "default",
+      "displayName": "Default (Debug, Ninja, Clang)",
+      "description": "Debug build with Ninja + Clang",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     },
     {
       "name": "release",
-      "displayName": "Release (Ninja)",
+      "displayName": "Release (Ninja, Clang)",
       "description": "Optimized release build",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build",
+      "inherits": "base",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "LLVM_DIR": "${sourceDir}/llvm-dev/lib/cmake/llvm"
+        "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
       "name": "relwithdebinfo",
-      "displayName": "RelWithDebInfo (Ninja)",
+      "displayName": "RelWithDebInfo (Ninja, Clang)",
       "description": "Release with debug info",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build",
+      "inherits": "base",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "LLVM_DIR": "${sourceDir}/llvm-dev/lib/cmake/llvm"
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "msvc",
+      "displayName": "Debug (Ninja, MSVC)",
+      "description": "Debug build with MSVC — requires Developer Command Prompt",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "cl",
+        "CMAKE_CXX_COMPILER": "cl"
       }
     }
   ],

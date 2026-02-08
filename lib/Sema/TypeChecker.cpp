@@ -383,8 +383,22 @@ bool TypeChecker::isValidType(const std::string& typeName) const {
 
 bool TypeChecker::typesCompatible(const std::string& expected,
                                   const std::string& actual) const {
-    // Exact match for now; numeric promotion rules can be added later
-    return expected == actual;
+    if (expected == actual) return true;
+
+    // Integer literal type (Int64) is compatible with any integer type
+    if (actual == "Int64" &&
+        (expected == "Int8" || expected == "Int16" || expected == "Int32" ||
+         expected == "UInt8" || expected == "UInt16" || expected == "UInt32" ||
+         expected == "UInt64")) {
+        return true;
+    }
+
+    // Float literal type (Float64) is compatible with Float32
+    if (actual == "Float64" && expected == "Float32") {
+        return true;
+    }
+
+    return false;
 }
 
 std::string TypeChecker::typeToString(const ast::TypeNode& type) const {

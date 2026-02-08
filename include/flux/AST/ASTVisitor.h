@@ -70,6 +70,7 @@ public:
     virtual void visit(TryExpr& node) {}
     virtual void visit(AssignExpr& node) {}
     virtual void visit(CompoundAssignExpr& node) {}
+    virtual void visit(StructLiteralExpr& node) {}
 
     // ---- Patterns ----
     virtual void visit(WildcardPattern& node) {}

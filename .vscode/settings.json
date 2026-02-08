@@ -35,11 +35,8 @@
 
   // ── CMake ─────────────────────────────────────────────────────────────
   "cmake.configureOnOpen": true,
-  "cmake.generator": "Ninja",
+  "cmake.useCMakePresets": "always",
   "cmake.buildDirectory": "${workspaceFolder}/build",
-  "cmake.configureSettings": {
-    "LLVM_DIR": "${workspaceFolder}/llvm-dev/lib/cmake/llvm"
-  },
   "cmake.configureArgs": [],
 
   // ── C/C++ IntelliSense ────────────────────────────────────────────────

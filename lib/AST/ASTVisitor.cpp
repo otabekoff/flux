@@ -66,6 +66,7 @@ void ASTVisitor::visitExpr(Expr& expr) {
         case Expr::Kind::Try:            visit(static_cast<TryExpr&>(expr)); break;
         case Expr::Kind::Assign:         visit(static_cast<AssignExpr&>(expr)); break;
         case Expr::Kind::CompoundAssign: visit(static_cast<CompoundAssignExpr&>(expr)); break;
+        case Expr::Kind::StructLiteral: visit(static_cast<StructLiteralExpr&>(expr)); break;
     }
 }
 

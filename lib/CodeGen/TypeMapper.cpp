@@ -31,8 +31,7 @@ void TypeMapper::initBuiltinTypes() {
     builtinTypes_["Char"] = llvm::Type::getInt32Ty(ctx_);
 
     // String is a pointer to i8 (will be a struct in full implementation)
-    builtinTypes_["String"] = llvm::PointerType::getUnqual(
-        llvm::Type::getInt8Ty(ctx_));
+    builtinTypes_["String"] = llvm::PointerType::getUnqual(ctx_);
 
     // Void
     builtinTypes_["Void"] = llvm::Type::getVoidTy(ctx_);
@@ -83,14 +82,8 @@ llvm::Type* TypeMapper::mapType(const ast::TypeNode& type) {
     }
 
     case ast::TypeNode::Kind::Function: {
-        auto& ft = static_cast<const ast::FunctionType&>(type);
-        llvm::Type* retType = mapType(*ft.returnType);
-        std::vector<llvm::Type*> paramTypes;
-        for (auto& p : ft.paramTypes) {
-            paramTypes.push_back(mapType(*p));
-        }
-        auto* fnType = llvm::FunctionType::get(retType, paramTypes, false);
-        return llvm::PointerType::getUnqual(fnType);
+        // Function types are represented as opaque pointers in LLVM
+        return llvm::PointerType::getUnqual(ctx_);
     }
 
     case ast::TypeNode::Kind::Array: {
@@ -100,7 +93,7 @@ llvm::Type* TypeMapper::mapType(const ast::TypeNode& type) {
             return llvm::ArrayType::get(elemType, at.size.value());
         }
         // Dynamic array: pointer (will be a slice struct later)
-        return llvm::PointerType::getUnqual(elemType);
+        return llvm::PointerType::getUnqual(ctx_);
     }
 
     case ast::TypeNode::Kind::Option:

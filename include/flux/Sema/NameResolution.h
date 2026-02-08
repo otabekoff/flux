@@ -93,8 +93,8 @@ private:
     void enterScope(const std::string& name);
     void exitScope();
 
-    Scope* currentScope_ = nullptr;
     DiagnosticEngine& diag_;
+    Scope* currentScope_ = nullptr;
 };
 
 } // namespace flux
