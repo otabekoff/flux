@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "The Flux Compiler",
   "private": true,
+  "type": "module",
   "scripts": {
     "tsc:init": "tsc --init",
     "dev": "vitepress dev",
