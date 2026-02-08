@@ -32,9 +32,7 @@ jobs:
 
     - name: Install LLVM (Windows)
       if: matrix.os == 'windows-latest'
-      uses: KyleMayes/install-llvm-action@v2
-      with:
-        version: "18"
+      run: choco install llvm --version=18.1.8 -y
 
     - name: Install Ninja (Windows)
       if: matrix.os == 'windows-latest'
@@ -44,12 +42,14 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: pwsh
       run: |
-        echo "LLVM_DIR=C:\Program Files\LLVM\lib\cmake\llvm" >> $env:GITHUB_ENV
+        $llvmPath = "C:\Program Files\LLVM\lib\cmake\llvm"
+        echo "LLVM_DIR=$llvmPath" >> $env:GITHUB_ENV
+        echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
 
     - name: Configure and Build (Windows)
       if: matrix.os == 'windows-latest'
       run: |
-        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_DIR="$env:LLVM_DIR"
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
         cmake --build build
 
     - name: Configure and Build (macOS)
