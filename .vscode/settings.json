@@ -26,7 +26,8 @@
     "explorer.fileNesting.patterns": {
         "CMakeLists.txt": "CMakePresets.json, cmake_install.cmake",
         "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb",
-        "Makefile": "flux.toml, .clang-format, .clang-tidy, .editorconfig"
+        "Makefile": "flux.toml, .clang-format, .clang-tidy, .editorconfig",
+        "README.md": "CODE_OF_CONDUCT.md, CONTRIBUTING.md, LICENSE.md, CHANGELOG.md, SECURITY.md"
     },
     // ── CMake ─────────────────────────────────────────────────────────────
     "cmake.configureOnOpen": true,

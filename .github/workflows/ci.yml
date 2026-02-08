@@ -41,9 +41,15 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: choco install ninja
 
+    - name: Export LLVM_DIR (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: pwsh
+      run: |
+        echo "LLVM_DIR=C:\Program Files\LLVM\lib\cmake\llvm" >> $env:GITHUB_ENV
+
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
-      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLLVM_DIR="$env:LLVM_DIR"
 
     - name: Configure CMake (macOS)
       if: matrix.os == 'macos-latest'
