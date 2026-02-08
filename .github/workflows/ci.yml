@@ -33,29 +33,17 @@ jobs:
 
     - name: Install LLVM (Windows)
       if: matrix.os == 'windows-latest'
-      shell: pwsh
-      run: |
-        $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/LLVM-18.1.8-win64.exe"
-        $installer = "$env:TEMP\llvm-installer.exe"
-        Invoke-WebRequest -Uri $llvmUrl -OutFile $installer
-        Start-Process -FilePath $installer -ArgumentList "/S" -Wait
-        echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
+      uses: KyleMayes/install-llvm-action@v2
+      with:
+        version: "18"
 
     - name: Install Ninja (Windows)
       if: matrix.os == 'windows-latest'
       run: choco install ninja
 
-    - name: Debug LLVM Location (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: pwsh
-      run: |
-        $path = "C:\Program Files\LLVM\lib\cmake\llvm\LLVMConfig.cmake"
-        if (Test-Path $path) { Write-Host "FOUND at $path" } else { Write-Host "NOT FOUND at $path" }
-        Get-ChildItem -Path "C:\Program Files\LLVM\lib\cmake\llvm"
-
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
-      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ "-DLLVM_DIR=C:/Program Files/LLVM/lib/cmake/llvm"
+      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
 
     - name: Configure CMake (macOS)
       if: matrix.os == 'macos-latest'
