@@ -18,6 +18,63 @@ IREmitter::IREmitter(llvm::LLVMContext &ctx, llvm::Module &module,
 // Declaration emission
 // -----------------------------------------------------------------------
 
+void IREmitter::declareDecl(ast::Decl &decl) {
+  switch (decl.kind) {
+  case ast::Decl::Kind::Func:
+    declareFunc(static_cast<ast::FuncDecl &>(decl));
+    break;
+  case ast::Decl::Kind::Struct:
+    declareStruct(static_cast<ast::StructDecl &>(decl));
+    break;
+  default:
+    break;
+  }
+}
+
+void IREmitter::declareFunc(ast::FuncDecl &decl) {
+  // Determine return type
+  llvm::Type *retType = decl.returnType ? typeMapper_.mapType(*decl.returnType)
+                                        : typeMapper_.getVoidType();
+
+  // Determine parameter types
+  std::vector<llvm::Type *> paramTypes;
+  for (auto &param : decl.params) {
+    if (param.type) {
+      paramTypes.push_back(typeMapper_.mapType(*param.type));
+    } else {
+      paramTypes.push_back(llvm::PointerType::getUnqual(ctx_));
+    }
+  }
+
+  // Create function type
+  auto *funcType = llvm::FunctionType::get(retType, paramTypes, false);
+
+  // Set linkage: 'pub' declarations get external linkage
+  auto linkage = (decl.visibility == ast::Decl::Visibility::Public)
+                     ? llvm::Function::ExternalLinkage
+                     : llvm::Function::InternalLinkage;
+
+  if (decl.name == "main") {
+    linkage = llvm::Function::ExternalLinkage;
+  }
+
+  if (!module_.getFunction(decl.name)) {
+    llvm::Function::Create(funcType, linkage, decl.name, &module_);
+  }
+}
+
+void IREmitter::declareStruct(ast::StructDecl &decl) {
+  if (!llvm::StructType::getTypeByName(ctx_, decl.name)) {
+    std::vector<llvm::Type *> fieldTypes;
+    for (auto &field : decl.fields) {
+      if (field.type) {
+        fieldTypes.push_back(typeMapper_.mapType(*field.type));
+      }
+    }
+    llvm::StructType::create(ctx_, fieldTypes, decl.name);
+  }
+}
+
 void IREmitter::emitDecl(ast::Decl &decl) {
   switch (decl.kind) {
   case ast::Decl::Kind::Func:
@@ -37,35 +94,11 @@ void IREmitter::emitDecl(ast::Decl &decl) {
 }
 
 void IREmitter::emitFuncDecl(ast::FuncDecl &decl) {
-  // Determine return type
-  llvm::Type *retType = decl.returnType ? typeMapper_.mapType(*decl.returnType)
-                                        : typeMapper_.getVoidType();
-
-  // Determine parameter types
-  std::vector<llvm::Type *> paramTypes;
-  for (auto &param : decl.params) {
-    if (param.type) {
-      paramTypes.push_back(typeMapper_.mapType(*param.type));
-    } else {
-      // Should have been caught by type checker
-      paramTypes.push_back(llvm::PointerType::getUnqual(ctx_));
-    }
+  auto *func = module_.getFunction(decl.name);
+  if (!func) {
+    // Should have been declared in declareDecl pass
+    return;
   }
-
-  // Create function type
-  auto *funcType = llvm::FunctionType::get(retType, paramTypes, false);
-
-  // Set linkage: 'pub' declarations get external linkage
-  auto linkage = (decl.visibility == ast::Decl::Visibility::Public)
-                     ? llvm::Function::ExternalLinkage
-                     : llvm::Function::InternalLinkage;
-
-  // Handle "main" function specially — always external
-  if (decl.name == "main") {
-    linkage = llvm::Function::ExternalLinkage;
-  }
-
-  auto *func = llvm::Function::Create(funcType, linkage, decl.name, &module_);
 
   // Name arguments
   size_t idx = 0;
@@ -124,14 +157,8 @@ void IREmitter::emitFuncDecl(ast::FuncDecl &decl) {
   namedValues_ = savedNamedValues;
 }
 
-void IREmitter::emitStructDecl(ast::StructDecl &decl) {
-  std::vector<llvm::Type *> fieldTypes;
-  for (auto &field : decl.fields) {
-    if (field.type) {
-      fieldTypes.push_back(typeMapper_.mapType(*field.type));
-    }
-  }
-  llvm::StructType::create(ctx_, fieldTypes, decl.name);
+void IREmitter::emitStructDecl(ast::StructDecl & /*decl*/) {
+  // Structs are declared in declareDecl pass
 }
 
 void IREmitter::emitEnumDecl(ast::EnumDecl & /*decl*/) {
@@ -526,18 +553,47 @@ llvm::Value *IREmitter::emitCallExpr(ast::CallExpr &expr) {
     }
   }
 
-  auto *calleeFunc = module_.getFunction(calleeName);
-  if (!calleeFunc) {
-    diag_.emitError(expr.location, "unknown function '" + calleeName + "'");
-    return nullptr;
-  }
-
   std::vector<llvm::Value *> args;
   for (auto &arg : expr.arguments) {
     auto *val = emitExpr(*arg);
     if (!val)
       return nullptr;
     args.push_back(val);
+  }
+
+  auto *calleeFunc = module_.getFunction(calleeName);
+  if (!calleeFunc) {
+    // Special handling for built-in/runtime functions
+    if (calleeName == "io::println") {
+        calleeName = "flux_println";
+    } else if (calleeName == "io::print_int") {
+        calleeName = "flux_print_int";
+    } else if (calleeName == "io::print") {
+        calleeName = "flux_print";
+    } else if (calleeName == "io::print_float") {
+        calleeName = "flux_print_float";
+    } else if (calleeName == "io::print_bool") {
+        calleeName = "flux_print_bool";
+    }
+
+    calleeFunc = module_.getFunction(calleeName);
+  }
+
+  if (!calleeFunc) {
+    // If it's a known flux runtime function, declare it as external
+    if (calleeName.starts_with("flux_")) {
+        std::vector<llvm::Type *> argTypes;
+        for (auto *arg : args) {
+            argTypes.push_back(arg->getType());
+        }
+        auto *funcType = llvm::FunctionType::get(builder_.getVoidTy(), argTypes, false);
+        calleeFunc = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, calleeName, &module_);
+    }
+  }
+
+  if (!calleeFunc) {
+    diag_.emitError(expr.location, "unknown function '" + calleeName + "'");
+    return nullptr;
   }
 
   if (calleeFunc->getReturnType()->isVoidTy()) {

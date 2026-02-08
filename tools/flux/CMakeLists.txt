@@ -1,4 +1,9 @@
-add_executable(flux main.cpp)
+set(FLUX_SOURCES main.cpp)
+if(WIN32)
+    list(APPEND FLUX_SOURCES flux.rc)
+endif()
+
+add_executable(flux ${FLUX_SOURCES})
 target_include_directories(flux PRIVATE
     ${PROJECT_SOURCE_DIR}/include
 )

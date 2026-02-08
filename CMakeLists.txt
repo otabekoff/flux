@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(FluxCompiler VERSION 0.1.2 LANGUAGES C CXX)
+project(FluxCompiler VERSION 0.1.0 LANGUAGES C CXX)
 
 # ============================================================================
 # C++20 Configuration
@@ -213,17 +213,25 @@ if(WIN32 AND NOT UNIX)
     set(CPACK_NSIS_CONTACT "Otabek Sadiridinov")
     set(CPACK_NSIS_MODIFY_PATH ON)
     
+    # NSIS Icons (MUI)
+    set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/logo128x128.ico")
+    set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/logo128x128.ico")
+    set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\flux.exe")
+    
     # NSIS Shortcuts (Start Menu and Desktop)
     set(CPACK_NSIS_MENU_LINKS
         "bin/flux.exe" "Flux Compiler"
         "https://github.com/otabekoff/flux" "Flux Documentation"
     )
     set(CPACK_NSIS_CREATE_ICONS_EXTRA "
-        CreateShortCut '$DESKTOP\\\\Flux Compiler.lnk' '$INSTDIR\\\\bin\\\\flux.exe'
+        CreateShortCut '$DESKTOP\\\\Flux Compiler.lnk' '$INSTDIR\\\\bin\\\\flux.exe' '' '$INSTDIR\\\\assets\\\\logo128x128.ico'
     ")
     set(CPACK_NSIS_DELETE_ICONS_EXTRA "
         Delete '$DESKTOP\\\\Flux Compiler.lnk'
     ")
+    
+    # Install the assets into the installer so they are available for the shortcut
+    install(DIRECTORY assets DESTINATION .)
 endif()
 
 # Linux configuration

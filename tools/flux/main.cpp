@@ -249,8 +249,55 @@ int main(int argc, char *argv[]) {
   }
 
   if (opts.outputFormat == flux::OutputFormat::Executable) {
+    // Determine the object file name (temporary)
+    std::string objFile = outFile + ".o";
+
+    // Write the output as an object file first
+    codegen.getOptions().outputFormat = flux::OutputFormat::Object;
+    if (!codegen.writeOutput(objFile)) {
+      std::cerr << "error: failed to write temporary object file\n";
+      return 1;
+    }
+
     // Link the object file into an executable
-    // For now, just produce the object file
+    std::string linker = "clang"; // Default to clang
+#ifdef _WIN32
+    // On Windows, use clang.exe which comes with LLVM/MinGW
+    linker = "clang";
+#endif
+
+    std::stringstream linkCmd;
+    linkCmd << linker << " " << objFile << " -o " << outFile;
+
+    // Find the runtime library path
+    // For now, assume it's in the same directory as the executable or in a known lib path
+    auto exePath = std::filesystem::path(argv[0]).parent_path();
+    std::string runtimePath = exePath.string() + "/FluxRuntime.lib"; // Windows naming
+#ifndef _WIN32
+    runtimePath = exePath.string() + "/libFluxRuntime.a"; // Unix naming
+#endif
+
+    if (std::filesystem::exists(runtimePath)) {
+        linkCmd << " " << runtimePath;
+    } else {
+        // Fallback to searching in standard paths
+        linkCmd << " -lFluxRuntime";
+    }
+
+    // Add necessary libraries for static linking if needed
+#ifdef _WIN32
+    linkCmd << " -static";
+#endif
+
+    int ret = std::system(linkCmd.str().c_str());
+    if (ret != 0) {
+      std::cerr << "error: linking failed with exit code " << ret << "\n";
+      std::filesystem::remove(objFile);
+      return 1;
+    }
+
+    // Cleanup temporary object file
+    std::filesystem::remove(objFile);
     std::cout << "Output written to " << outFile << "\n";
   }
 

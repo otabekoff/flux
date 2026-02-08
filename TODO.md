@@ -1,30 +1,20 @@
+# PHASE 1
+
+1. Add sigstore and all details and publisher info and other info needed to make windows not to consider binaries as viruses. 
+
+2. docker setup, is it good to use docker for github actions too? what about local and remote testing?
+
+3. And note we've to consider windows(compatible with x86, x64, both and amd, arm like stuffs), linux(different distros, amd, arm like stuffs, different architectures, x86, x64, both), macos(different architectures, x86, x64, both, arm, amd, intel, apple silicon/bionic chip or other). By this I mean we need to release professionally, do the best. Also document about release, tagging or whatever about packaging and distributing, release should have some info message.
+
+4. Also write appended message to readme.dev.md file about local building release and debug and testing files with it. Is it good to move to LLVM 18 on local too? 
+
+5. make semantic versioning and conventional commit stuff, lintsaged and commitlint and husky. List places to edit before publishing new version. And tool to change those parts?
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# PHASE 2
 Below is a **production-grade, cross-platform CI/CD** setup similar in spirit to what modern language projects use (Rust, Zig, Nim style pipelines).
 
 This provides:
@@ -574,10 +564,154 @@ Triggered by release workflow.
 
 Those are the steps that move a language from “project” to “ecosystem.”
 
+## Full check
 
+Full Professional Release Asset Matrix
+1) Windows
+x86_64 (mainstream)
+flux-0.1.0-windows-x86_64.zip
+flux-0.1.0-windows-x86_64-installer.exe
+flux-0.1.0-windows-x86_64.msi
+
+ARM64 (modern laptops, Surface, etc.)
+flux-0.1.0-windows-arm64.zip
+flux-0.1.0-windows-arm64-installer.exe
+flux-0.1.0-windows-arm64.msi
+
+x86 (32-bit legacy)
+flux-0.1.0-windows-x86.zip
+flux-0.1.0-windows-x86-installer.exe
+
+2) macOS
+Universal build (recommended primary)
+flux-0.1.0-macos-universal.dmg
+
+Separate architecture builds
+flux-0.1.0-macos-x86_64.dmg
+flux-0.1.0-macos-aarch64.dmg
+
+Portable tarballs
+flux-0.1.0-macos-x86_64.tar.gz
+flux-0.1.0-macos-aarch64.tar.gz
+
+3) Linux (major distros)
+Generic portable builds
+flux-0.1.0-linux-x86_64.tar.gz
+flux-0.1.0-linux-aarch64.tar.gz
+flux-0.1.0-linux-armv7.tar.gz
+
+Debian / Ubuntu
+flux-0.1.0-linux-x86_64.deb
+flux-0.1.0-linux-aarch64.deb
+
+Red Hat / Fedora / Rocky / Alma
+flux-0.1.0-linux-x86_64.rpm
+flux-0.1.0-linux-aarch64.rpm
+
+Arch Linux (binary package)
+flux-0.1.0-linux-x86_64.pkg.tar.zst
+
+Alpine Linux (musl)
+flux-0.1.0-linux-x86_64-musl.tar.gz
+flux-0.1.0-linux-aarch64-musl.tar.gz
+
+4) BSD systems (advanced/professional coverage)
+flux-0.1.0-freebsd-x86_64.tar.gz
+flux-0.1.0-openbsd-x86_64.tar.gz
+flux-0.1.0-netbsd-x86_64.tar.gz
+
+5) Source distributions
+flux-0.1.0-src.tar.gz
+flux-0.1.0-src.zip
+
+
+(Separate from GitHub auto-generated source archives)
+
+6) Editor and tooling
+VS Code extension
+flux-0.1.0.vsix
+
+Language server (if separate)
+flux-lsp-0.1.0-windows-x86_64.zip
+flux-lsp-0.1.0-linux-x86_64.tar.gz
+flux-lsp-0.1.0-macos-universal.tar.gz
+
+7) Documentation bundle
+
+Offline docs:
+
+flux-0.1.0-docs.zip
+flux-0.1.0-docs.tar.gz
+
+8) Checksums and signatures (security-critical)
+Checksums
+flux-0.1.0-checksums.txt
+
+GPG signature
+flux-0.1.0-checksums.txt.asc
+
+
+This is mandatory for serious language projects.
+
+Complete professional asset list (summary)
+Windows
+flux-0.1.0-windows-x86_64.zip
+flux-0.1.0-windows-x86_64-installer.exe
+flux-0.1.0-windows-x86_64.msi
+flux-0.1.0-windows-arm64.zip
+flux-0.1.0-windows-arm64-installer.exe
+flux-0.1.0-windows-arm64.msi
+flux-0.1.0-windows-x86.zip
+flux-0.1.0-windows-x86-installer.exe
+
+macOS
+flux-0.1.0-macos-universal.dmg
+flux-0.1.0-macos-x86_64.dmg
+flux-0.1.0-macos-aarch64.dmg
+flux-0.1.0-macos-x86_64.tar.gz
+flux-0.1.0-macos-aarch64.tar.gz
+
+Linux
+flux-0.1.0-linux-x86_64.tar.gz
+flux-0.1.0-linux-aarch64.tar.gz
+flux-0.1.0-linux-armv7.tar.gz
+flux-0.1.0-linux-x86_64.deb
+flux-0.1.0-linux-aarch64.deb
+flux-0.1.0-linux-x86_64.rpm
+flux-0.1.0-linux-aarch64.rpm
+flux-0.1.0-linux-x86_64.pkg.tar.zst
+flux-0.1.0-linux-x86_64-musl.tar.gz
+flux-0.1.0-linux-aarch64-musl.tar.gz
+
+BSD
+flux-0.1.0-freebsd-x86_64.tar.gz
+flux-0.1.0-openbsd-x86_64.tar.gz
+flux-0.1.0-netbsd-x86_64.tar.gz
+
+Tooling & source
+flux-0.1.0-src.tar.gz
+flux-0.1.0-src.zip
+flux-0.1.0.vsix
+flux-0.1.0-docs.zip
+flux-0.1.0-docs.tar.gz
+flux-0.1.0-checksums.txt
+flux-0.1.0-checksums.txt.asc
+
+
+# Make better
 
 Create official installer scripts (curl | sh, PowerShell installer) for all windows, linux, macos.
 
-
-
-
+1s
+Run cd build
+CMake Error at D:/a/flux/flux/build/CPackConfig.cmake:26 (set):
+  Syntax error in cmake code at
+    D:/a/flux/flux/build/CPackConfig.cmake:27
+  when parsing string
+    
+          CreateShortCut '$DESKTOP\Flux Compiler.lnk' '$INSTDIR\bin\flux.exe'
+      
+  Invalid character escape '\F'.
+CPack Error: CPack project name not specified
+CPack Error: CPack project name not specified
+Error: Process completed with exit code 1.

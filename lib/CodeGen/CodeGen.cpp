@@ -95,6 +95,13 @@ bool CodeGen::generate(ast::Module& module) {
 
     // Emit IR for all declarations
     IREmitter emitter(context_, *llvmModule_, diag_);
+
+    // Phase 1: Declare all functions and types (prototypes)
+    for (auto& decl : module.declarations) {
+        emitter.declareDecl(*decl);
+    }
+
+    // Phase 2: Emit the bodies
     for (auto& decl : module.declarations) {
         emitter.emitDecl(*decl);
     }

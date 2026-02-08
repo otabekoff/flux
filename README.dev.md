@@ -310,16 +310,24 @@ cpack -C Release
 
 This will generate the installers in the `build/` directory.
 
-### Engineering Standards
+### Pre-release Checklist
 
-- **Commitlint**: Enforces conventional commit messages.
-- **Husky**: Runs pre-commit hooks (linting, formatting).
-- **Lint-staged**: Formats only modified files on commit.
+Before tagging a new version for distribution, ensure the following files are updated:
 
-To set up the hooks locally:
-```bash
-npm install
-```
+1.  **`CMakeLists.txt`**: Update the `project(... VERSION x.y.z)` call (Line 2).
+2.  **`package.json`**: Update the `"version": "x.y.z"` field (Line 3).
+3.  **`editors/vscode/package.json`**: Update the `"version": "x.y.z"` field (Line 3).
+4.  **`CHANGELOG.md`**: Ensure all notable changes are documented.
+
+**Recommended Tooling**:
+- Use `npm version <patch|minor|major>` to automatically update `package.json`.
+- Use `npm run commit` for conventional commits, which compatible with `semantic-release` for automated changelog generation and tagging.
+
+### Local Environment Recommendation
+
+It is highly recommended to align your local environment with the CI production build:
+- **LLVM Version**: Use **LLVM 18.x**. It is the stable target for all distribution packages.
+- **Tools**: Ensure `Ninja` and a C++20 compatible compiler are in your PATH.
 
 ```
 gh release delete v0.1.0 --repo otabekoff/flux --yes && git tag -d v0.1.0 && git push origin :refs/tags/v0.1.0 && git tag v0.1.0 && git push origin v0.1.0

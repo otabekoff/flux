@@ -27,7 +27,10 @@ public:
     IREmitter(llvm::LLVMContext& ctx, llvm::Module& module,
               DiagnosticEngine& diag);
 
-    /// Emit IR for a top-level declaration.
+    /// Declare prototypes for a top-level declaration (first pass).
+    void declareDecl(ast::Decl& decl);
+
+    /// Emit IR for a top-level declaration (second pass).
     void emitDecl(ast::Decl& decl);
 
     /// Emit IR for a statement.
@@ -38,6 +41,8 @@ public:
 
 private:
     // Declaration emission
+    void declareFunc(ast::FuncDecl& decl);
+    void declareStruct(ast::StructDecl& decl);
     void emitFuncDecl(ast::FuncDecl& decl);
     void emitStructDecl(ast::StructDecl& decl);
     void emitEnumDecl(ast::EnumDecl& decl);
