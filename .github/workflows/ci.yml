@@ -34,13 +34,17 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         choco install llvm ninja
-        $llvm_bin = "C:/Program Files/LLVM/bin"
-        if (Test-Path "$llvm_bin/llvm-config.exe") {
-          echo "$llvm_bin" >> $env:GITHUB_PATH
-          $cmakedir = & "$llvm_bin/llvm-config.exe" --cmakedir
-          $cmakedir = $cmakedir.Trim() -replace '\\', '/'
-          echo "LLVM_DIR=$cmakedir" >> $env:GITHUB_ENV
-          echo "CMAKE_PREFIX_PATH=$cmakedir" >> $env:GITHUB_ENV
+        $llvm_root = "C:/Program Files/LLVM"
+        $config_file = Get-ChildItem -Path $llvm_root -Filter "LLVMConfig.cmake" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($config_file) {
+          $cmake_dir = $config_file.DirectoryName -replace '\\', '/'
+          echo "Found LLVMConfig.cmake at: $cmake_dir"
+          echo "LLVM_DIR=$cmake_dir" >> $env:GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$cmake_dir" >> $env:GITHUB_ENV
+          echo "$llvm_root/bin" >> $env:GITHUB_PATH
+        } else {
+          echo "::error::LLVMConfig.cmake not found in $llvm_root"
+          exit 1
         }
 
     - name: Configure CMake
