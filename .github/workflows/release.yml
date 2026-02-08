@@ -1,10 +1,14 @@
-name: Release
+name: Main Pipeline
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types:
-      - completed
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    - cron: "0 2 * * *" # Nightly build at 02:00 UTC
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -12,21 +16,134 @@ permissions:
   attestations: write
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      (startsWith(github.event.workflow_run.head_branch, 'v') || startsWith(github.event.workflow_run.head_sha, 'v'))
-    
+  build:
+    name: Build (${{ matrix.os }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: linux
+            arch: amd64
+            runner: ubuntu-latest
+          - os: windows
+            arch: amd64
+            runner: windows-latest
+          - os: macos
+            arch: arm64
+            runner: macos-14
+          - os: macos
+            arch: amd64
+            runner: macos-13 # Standard Intel runner for GitHub
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download Artifacts
+      - name: Install sccache
+        uses: mozilla-actions/sccache-action@v0.0.4
+
+      # --- Linux Setup ---
+      - name: Set up LLVM (Linux)
+        if: matrix.os == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y llvm-18-dev clang-18 ninja-build
+          echo "CC=clang-18" >> $GITHUB_ENV
+          echo "CXX=clang++-18" >> $GITHUB_ENV
+          echo "LLVM_DIR=/usr/lib/llvm-18/lib/cmake/llvm" >> $GITHUB_ENV
+
+      # --- Windows Setup ---
+      - name: Set up LLVM (Windows)
+        if: matrix.os == 'windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANG64
+          install: >-
+            mingw-w64-clang-x86_64-llvm
+            mingw-w64-clang-x86_64-clang
+            mingw-w64-clang-x86_64-ninja
+            mingw-w64-clang-x86_64-cmake
+
+      # --- macOS Setup ---
+      - name: Set up LLVM (macOS)
+        if: matrix.os == 'macos'
+        run: |
+          for pkg in llvm@18 ninja; do
+            brew list $pkg &>/dev/null || brew install $pkg
+          done
+          echo "LLVM_DIR=$(brew --prefix llvm@18)/lib/cmake/llvm" >> $GITHUB_ENV
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+
+      # --- Unified Build ---
+      - name: Configure (Unix)
+        if: matrix.os != 'windows'
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+
+      - name: Configure (Windows)
+        if: matrix.os == 'windows'
+        shell: msys2 {0}
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+
+      - name: Build (Unix)
+        if: matrix.os != 'windows'
+        run: cmake --build build
+
+      - name: Build (Windows)
+        if: matrix.os == 'windows'
+        shell: msys2 {0}
+        run: cmake --build build
+
+      - name: Test (Unix)
+        if: matrix.os != 'windows'
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Test (Windows)
+        if: matrix.os == 'windows'
+        shell: msys2 {0}
+        run: ctest --test-dir build --output-on-failure
+
+      # --- Artifact Packaging ---
+      - name: Package Raw Artifacts (Unix)
+        if: matrix.os != 'windows'
+        run: |
+          mkdir -p dist
+          find build -maxdepth 2 -name "flux*" -type f -executable | xargs -I{} cp {} dist/
+          cp -r build/runtime dist/ 2>/dev/null || true
+
+      - name: Package Raw Artifacts (Windows)
+        if: matrix.os == 'windows'
+        shell: msys2 {0}
+        run: |
+          mkdir -p dist
+          find build -maxdepth 2 -name "flux*" -type f -name "*.exe" | xargs -I{} cp {} dist/
+          cp -r build/runtime dist/ 2>/dev/null || true
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flux-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/
+
+  release:
+    name: Create Professional Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: flux-*
-          path: artifacts
-          run-id: ${{ github.event.workflow_run.id }}
+          path: all-artifacts
           merge-multiple: true
 
       - name: Install Cosign
@@ -34,15 +151,14 @@ jobs:
 
       - name: Sign Binaries (Keyless)
         run: |
-          find artifacts -maxdepth 1 -type f \( -executable -o -name "*.exe" \) | while read file; do
+          find all-artifacts -maxdepth 1 -type f \( -executable -o -name "*.exe" \) | while read file; do
             cosign sign-blob --yes "$file" --output-signature "$file.sig" --output-certificate "$file.pem"
           done
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            artifacts/*
+          files: all-artifacts/*
           generate_release_notes: true
           draft: false
           prerelease: false
@@ -52,4 +168,4 @@ jobs:
       - name: Attest Build Provenance
         uses: actions/attest-build-provenance@v1
         with:
-          subject-path: "artifacts/flux*"
+          subject-path: "all-artifacts/flux*"
