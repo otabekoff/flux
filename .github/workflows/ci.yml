@@ -20,7 +20,7 @@ jobs:
             arch: amd64
           - os: macos-latest
             arch: arm64
-          - os: macos-13
+          - os: macos-12
             arch: amd64
 
     steps:
@@ -41,7 +41,9 @@ jobs:
       - name: Set up LLVM (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install llvm@18 ninja
+          for pkg in llvm@18 ninja; do
+            brew list $pkg &>/dev/null || brew install $pkg
+          done
           echo "LLVM_DIR=$(brew --prefix llvm@18)/lib/cmake/llvm" >> $GITHUB_ENV
           echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
 
