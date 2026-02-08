@@ -18,20 +18,20 @@ IREmitter::IREmitter(llvm::LLVMContext &ctx, llvm::Module &module,
 // Declaration emission
 // -----------------------------------------------------------------------
 
-void IREmitter::declareDecl(ast::Decl &decl) {
+void IREmitter::declareDecl(flux::ast::Decl &decl) {
   switch (decl.kind) {
-  case ast::Decl::Kind::Func:
-    declareFunc(static_cast<ast::FuncDecl &>(decl));
+  case flux::ast::Decl::Kind::Func:
+    declareFunc(static_cast<flux::ast::FuncDecl &>(decl));
     break;
-  case ast::Decl::Kind::Struct:
-    declareStruct(static_cast<ast::StructDecl &>(decl));
+  case flux::ast::Decl::Kind::Struct:
+    declareStruct(static_cast<flux::ast::StructDecl &>(decl));
     break;
   default:
     break;
   }
 }
 
-void IREmitter::declareFunc(ast::FuncDecl &decl) {
+void IREmitter::declareFunc(flux::ast::FuncDecl &decl) {
   // Determine return type
   llvm::Type *retType = decl.returnType ? typeMapper_.mapType(*decl.returnType)
                                         : typeMapper_.getVoidType();
@@ -63,7 +63,7 @@ void IREmitter::declareFunc(ast::FuncDecl &decl) {
   }
 }
 
-void IREmitter::declareStruct(ast::StructDecl &decl) {
+void IREmitter::declareStruct(flux::ast::StructDecl &decl) {
   if (!llvm::StructType::getTypeByName(ctx_, decl.name)) {
     std::vector<llvm::Type *> fieldTypes;
     for (auto &field : decl.fields) {
@@ -75,16 +75,16 @@ void IREmitter::declareStruct(ast::StructDecl &decl) {
   }
 }
 
-void IREmitter::emitDecl(ast::Decl &decl) {
+void IREmitter::emitDecl(flux::ast::Decl &decl) {
   switch (decl.kind) {
-  case ast::Decl::Kind::Func:
-    emitFuncDecl(static_cast<ast::FuncDecl &>(decl));
+  case flux::ast::Decl::Kind::Func:
+    emitFuncDecl(static_cast<flux::ast::FuncDecl &>(decl));
     break;
-  case ast::Decl::Kind::Struct:
-    emitStructDecl(static_cast<ast::StructDecl &>(decl));
+  case flux::ast::Decl::Kind::Struct:
+    emitStructDecl(static_cast<flux::ast::StructDecl &>(decl));
     break;
-  case ast::Decl::Kind::Enum:
-    emitEnumDecl(static_cast<ast::EnumDecl &>(decl));
+  case flux::ast::Decl::Kind::Enum:
+    emitEnumDecl(static_cast<flux::ast::EnumDecl &>(decl));
     break;
   default:
     // Other declarations (traits, imports, modules, impls)
@@ -93,7 +93,7 @@ void IREmitter::emitDecl(ast::Decl &decl) {
   }
 }
 
-void IREmitter::emitFuncDecl(ast::FuncDecl &decl) {
+void IREmitter::emitFuncDecl(flux::ast::FuncDecl &decl) {
   auto *func = module_.getFunction(decl.name);
   if (!func) {
     // Should have been declared in declareDecl pass
@@ -157,11 +157,11 @@ void IREmitter::emitFuncDecl(ast::FuncDecl &decl) {
   namedValues_ = savedNamedValues;
 }
 
-void IREmitter::emitStructDecl(ast::StructDecl & /*decl*/) {
+void IREmitter::emitStructDecl(flux::ast::StructDecl & /*decl*/) {
   // Structs are declared in declareDecl pass
 }
 
-void IREmitter::emitEnumDecl(ast::EnumDecl & /*decl*/) {
+void IREmitter::emitEnumDecl(flux::ast::EnumDecl & /*decl*/) {
   // Simple enums become i32 tags; variants with data become tagged unions.
   // Full implementation in a future pass.
 }
