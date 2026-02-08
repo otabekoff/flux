@@ -25,6 +25,13 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 # Compiler Flags
 # ============================================================================
 include(FluxCompilerOptions)
+flux_set_target_options(FluxRuntime)
+
+# MinGW/MSYS2 Static Linking (Fix for missing DLLs)
+if(MINGW)
+    add_link_options("-static-libgcc" "-static-libstdc++" "-static")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+endif()
 
 # ============================================================================
 # Find Dependencies
@@ -155,6 +162,8 @@ add_subdirectory(runtime)
 # Tests
 # ============================================================================
 if(FLUX_ENABLE_TESTS)
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+    set(INSTALL_GMOCK OFF CACHE BOOL "" FORCE)
     enable_testing()
     add_subdirectory(tests)
 endif()
@@ -174,6 +183,25 @@ set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_PACKAGE_DESCRIPTION "Flux is a modern, statically typed programming language for systems programming.")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/otabekoff/flux")
 
+# Architecture detection for package naming
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "amd64|x86_64|AMD64")
+    set(FLUX_ARCH "x86_64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64|ARM64")
+    set(FLUX_ARCH "arm64")
+else()
+    set(FLUX_ARCH ${CMAKE_SYSTEM_PROCESSOR})
+endif()
+
+if(WIN32)
+    set(FLUX_OS "win")
+elseif(APPLE)
+    set(FLUX_OS "macos")
+else()
+    set(FLUX_OS "linux")
+endif()
+
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}-${FLUX_OS}-${FLUX_ARCH}")
+
 # Windows configuration
 if(WIN32 AND NOT UNIX)
     set(CPACK_GENERATOR "ZIP;NSIS")
@@ -183,6 +211,18 @@ if(WIN32 AND NOT UNIX)
     set(CPACK_NSIS_URL_INFO_ABOUT "https://github.com/otabekoff/flux")
     set(CPACK_NSIS_CONTACT "Otabek Sadiridinov")
     set(CPACK_NSIS_MODIFY_PATH ON)
+    
+    # NSIS Shortcuts (Start Menu and Desktop)
+    set(CPACK_NSIS_MENU_LINKS
+        "bin/flux.exe" "Flux Compiler"
+        "https://github.com/otabekoff/flux" "Flux Documentation"
+    )
+    set(CPACK_NSIS_CREATE_ICONS_EXTRA "
+        CreateShortCut '$DESKTOP\\Flux Compiler.lnk' '$INSTDIR\\bin\\flux.exe'
+    ")
+    set(CPACK_NSIS_DELETE_ICONS_EXTRA "
+        Delete '$DESKTOP\\Flux Compiler.lnk'
+    ")
 endif()
 
 # Linux configuration
