@@ -14,8 +14,7 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "C:/Program Files/LLVM/bin/clang.exe",
         "CMAKE_CXX_COMPILER": "C:/Program Files/LLVM/bin/clang++.exe",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "LLVM_DIR": "${sourceDir}/llvm-dev/lib/cmake/llvm"
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     },
     {

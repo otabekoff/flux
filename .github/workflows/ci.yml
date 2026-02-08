@@ -34,11 +34,17 @@ jobs:
       if: matrix.os == 'windows-latest'
       run: |
         choco install llvm ninja
-        echo "CMAKE_PREFIX_PATH=C:/Program Files/LLVM" >> $GITHUB_ENV
-        echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH
+        $llvm_bin = "C:/Program Files/LLVM/bin"
+        if (Test-Path "$llvm_bin/llvm-config.exe") {
+          echo "$llvm_bin" >> $GITHUB_PATH
+          $cmakedir = & "$llvm_bin/llvm-config.exe" --cmakedir
+          $cmakedir = $cmakedir -replace '\\', '/'
+          echo "LLVM_DIR=$cmakedir" >> $GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$cmakedir" >> $GITHUB_ENV
+        }
 
     - name: Configure CMake
-      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR="C:/Program Files/LLVM/lib/cmake/llvm"
+      run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
         
     - name: Build
       run: cmake --build build
