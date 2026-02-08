@@ -25,7 +25,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 # Compiler Flags
 # ============================================================================
 include(FluxCompilerOptions)
-flux_set_target_options(FluxRuntime)
 
 # MinGW/MSYS2 Static Linking (Fix for missing DLLs)
 if(MINGW)
