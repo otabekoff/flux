@@ -6,30 +6,22 @@ on:
     tags: ["v*"]
   pull_request:
     branches: [main, master]
-  workflow_call: # Allow reuse by Nightly/Release
+  workflow_call:
 
 jobs:
-  build:
+  build-unix:
     name: Build (${{ matrix.os }}-${{ matrix.arch }})
-    runs-on: ${{ matrix.os == 'macos-14' && 'macos-14' || (matrix.os == 'windows-latest' && 'windows-latest' || 'ubuntu-latest') }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
             arch: amd64
-          - os: ubuntu-latest
-            arch: arm64
-          - os: windows-latest
-            arch: amd64
-          - os: macos-latest
+          - os: macos-13
             arch: amd64
           - os: macos-14
             arch: arm64
-
-    env:
-      MATRIX_OS: ${{ matrix.os }}
-      MATRIX_ARCH: ${{ matrix.arch }}
 
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +30,7 @@ jobs:
         uses: mozilla-actions/sccache-action@v0.0.4
 
       - name: Set up LLVM (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y llvm-18-dev clang-18 ninja-build
@@ -46,31 +38,15 @@ jobs:
           echo "CXX=clang++-18" >> $GITHUB_ENV
           echo "LLVM_DIR=/usr/lib/llvm-18/lib/cmake/llvm" >> $GITHUB_ENV
 
-      - name: Set up LLVM (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: CLANG64
-          install: >-
-            mingw-w64-clang-x86_64-llvm
-            mingw-w64-clang-x86_64-clang
-            mingw-w64-clang-x86_64-ninja
-            mingw-w64-clang-x86_64-cmake
-
       - name: Set up LLVM (macOS)
-        if: startsWith(matrix.os, 'macos-')
+        if: runner.os == 'macOS'
         run: |
           brew install llvm@18 ninja
           echo "LLVM_DIR=$(brew --prefix llvm@18)/lib/cmake/llvm" >> $GITHUB_ENV
           echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
 
       - name: Configure
-        shell: bash
         run: |
-          if [[ "$MATRIX_OS" == "windows-latest" ]]; then
-            # Use MSYS2 for Windows configure
-            echo "Running Windows Configure..."
-          fi
           cmake -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER_LAUNCHER=sccache \
@@ -83,19 +59,62 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
       - name: Package Raw Artifacts
-        shell: bash
         run: |
-          if [[ "$MATRIX_OS" == "windows-latest" ]]; then
-            # Special logic if needed for Windows files
-            echo "Packaging Windows artifacts..."
-          fi
           mkdir -p dist
           find build -maxdepth 2 -name "flux*" -type f -executable | x86_64-pc-linux-gnu-cp -t dist/ 2>/dev/null || \
+          find build -maxdepth 2 -name "flux*" -type f -executable | xargs -I{} cp {} dist/
+          cp -r build/runtime dist/ 2>/dev/null || true
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: flux-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/
+
+  build-windows:
+    name: Build (windows-latest-amd64)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install sccache
+        uses: mozilla-actions/sccache-action@v0.0.4
+
+      - name: Set up LLVM (Windows)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: CLANG64
+          install: >-
+            mingw-w64-clang-x86_64-llvm
+            mingw-w64-clang-x86_64-clang
+            mingw-w64-clang-x86_64-ninja
+            mingw-w64-clang-x86_64-cmake
+
+      - name: Configure
+        shell: msys2 {0}
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER_LAUNCHER=sccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build build
+
+      - name: Test
+        shell: msys2 {0}
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Package Raw Artifacts
+        shell: msys2 {0}
+        run: |
+          mkdir -p dist
           find build -maxdepth 2 -name "flux*" -type f -name "*.exe" | xargs -I{} cp {} dist/
           cp -r build/runtime dist/ 2>/dev/null || true
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: flux-${{ env.MATRIX_OS }}-${{ env.MATRIX_ARCH }}
+          name: flux-windows-latest-amd64
           path: dist/

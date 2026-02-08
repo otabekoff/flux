@@ -34,7 +34,7 @@ jobs:
 
       - name: Sign Binaries (Keyless)
         run: |
-          find artifacts -maxdepth 1 -type f -executable | while read file; do
+          find artifacts -maxdepth 1 -type f \( -executable -o -name "*.exe" \) | while read file; do
             cosign sign-blob --yes "$file" --output-signature "$file.sig" --output-certificate "$file.pem"
           done
 
