@@ -61,7 +61,15 @@ jobs:
                   cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
                   cmake --build build
 
-            - name: Package
+            - name: Package (Windows)
+              if: matrix.os == 'windows-latest'
+              shell: msys2 {0}
+              run: |
+                  cd build
+                  cpack -C Release
+
+            - name: Package (Unix)
+              if: matrix.os != 'windows-latest'
               run: |
                   cd build
                   cpack -C Release
