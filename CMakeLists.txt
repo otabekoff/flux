@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
-project(FluxCompiler VERSION 0.1.0 LANGUAGES C CXX)
+project(FluxCompiler VERSION 0.1.0 LANGUAGES CXX)
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    enable_language(C)
+endif()
 
 # ============================================================================
 # C++20 Configuration
