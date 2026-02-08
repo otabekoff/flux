@@ -1,87 +1,84 @@
 name: Release Build
 
 on:
-  push:
-    tags:
-      - 'v*'
+    push:
+        tags:
+            - "v*"
 
 jobs:
-  release:
-    name: Build and Release
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+    release:
+        name: Build and Release
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest, macos-latest]
 
-    steps:
-    - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-    - name: Set up LLVM (Linux)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y llvm-dev clang ninja-build
+            - name: Set up LLVM (Linux)
+              if: matrix.os == 'ubuntu-latest'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y llvm-dev clang ninja-build
 
-    - name: Set up LLVM (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install llvm ninja
-        echo "LLVM_DIR=$(brew --prefix llvm)/lib/cmake/llvm" >> $GITHUB_ENV
-        echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
+            - name: Set up LLVM (macOS)
+              if: matrix.os == 'macos-latest'
+              run: |
+                  brew install llvm ninja
+                  echo "LLVM_DIR=$(brew --prefix llvm)/lib/cmake/llvm" >> $GITHUB_ENV
+                  echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
 
-    - name: Install LLVM (Windows)
-      if: matrix.os == 'windows-latest'
-      run: choco install llvm --version=18.1.8 -y --no-progress --ignore-checksums --allow-downgrade
+            - uses: msys2/setup-msys2@v2
+              if: matrix.os == 'windows-latest'
+              with:
+                  msystem: UCRT64
+                  update: true
+                  install: >-
+                      git
+                      mingw-w64-ucrt-x86_64-toolchain
+                      mingw-w64-ucrt-x86_64-cmake
+                      mingw-w64-ucrt-x86_64-ninja
+                      mingw-w64-ucrt-x86_64-llvm
 
-    - name: Install Ninja (Windows)
-      if: matrix.os == 'windows-latest'
-      run: choco install ninja
+            - name: Configure and Build (Windows)
+              if: matrix.os == 'windows-latest'
+              shell: msys2 {0}
+              run: |
+                  cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+                  cmake --build build
 
-    - name: Export LLVM_DIR (Windows)
-      if: matrix.os == 'windows-latest'
-      shell: pwsh
-      run: |
-        $llvmPath = "C:\Program Files\LLVM\lib\cmake\llvm"
-        echo "LLVM_DIR=$llvmPath" >> $env:GITHUB_ENV
-        echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
+            - name: Configure and Build (macOS)
+              if: matrix.os == 'macos-latest'
+              run: |
+                  cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+                  cmake --build build
 
-    - name: Configure and Build (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-        cmake --build build
+            - name: Configure and Build (Linux)
+              if: matrix.os == 'ubuntu-latest'
+              run: |
+                  cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+                  cmake --build build
 
-    - name: Configure and Build (macOS)
-      if: matrix.os == 'macos-latest'
-      run: |
-        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-        cmake --build build
+            - name: Package
+              run: |
+                  cd build
+                  cpack -C Release
 
-    - name: Configure and Build (Linux)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
-        cmake --build build
+            - name: Build VS Code Extension
+              if: matrix.os == 'ubuntu-latest'
+              run: |
+                  cd editors/vscode
+                  npm install
+                  npx vsce package
 
-    - name: Package
-      run: |
-        cd build
-        cpack -C Release
-
-    - name: Build VS Code Extension
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        cd editors/vscode
-        npm install
-        npx vsce package
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: |
-          build/FluxCompiler-*
-          editors/vscode/*.vsix
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Create Release
+              uses: softprops/action-gh-release@v2
+              if: startsWith(github.ref, 'refs/tags/')
+              with:
+                  files: |
+                      build/FluxCompiler-*
+                      editors/vscode/*.vsix
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

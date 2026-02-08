@@ -31,31 +31,21 @@ jobs:
                   echo "LLVM_DIR=$(brew --prefix llvm)/lib/cmake/llvm" >> $GITHUB_ENV
                   echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
 
-            - name: Install LLVM (Windows)
+            - uses: msys2/setup-msys2@v2
               if: matrix.os == 'windows-latest'
-              run: choco install llvm --version=18.1.8 -y --allow-downgrade
-
-            - name: Install Ninja (Windows)
-              if: matrix.os == 'windows-latest'
-              run: choco install ninja
-
-            - name: Debug LLVM Location (Windows)
-              if: matrix.os == 'windows-latest'
-              shell: pwsh
-              run: |
-                  Get-ChildItem -Path "C:\Program Files\LLVM" -Recurse -Filter "LLVMConfig.cmake" | ForEach-Object { Write-Host "Found at: $($_.FullName)" }
-                  Get-ChildItem -Path "C:\ProgramData\chocolatey\lib\llvm" -Recurse -Filter "LLVMConfig.cmake" | ForEach-Object { Write-Host "Found at: $($_.FullName)" }
-
-            - name: Export LLVM_DIR (Windows)
-              if: matrix.os == 'windows-latest'
-              shell: pwsh
-              run: |
-                  $llvmPath = "C:\Program Files\LLVM\lib\cmake\llvm"
-                  echo "LLVM_DIR=$llvmPath" >> $env:GITHUB_ENV
-                  echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
+              with:
+                  msystem: UCRT64
+                  update: true
+                  install: >-
+                      git
+                      mingw-w64-ucrt-x86_64-toolchain
+                      mingw-w64-ucrt-x86_64-cmake
+                      mingw-w64-ucrt-x86_64-ninja
+                      mingw-w64-ucrt-x86_64-llvm
 
             - name: Configure CMake (Windows)
               if: matrix.os == 'windows-latest'
+              shell: msys2 {0}
               run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
             - name: Configure CMake (macOS)
