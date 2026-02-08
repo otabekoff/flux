@@ -40,6 +40,13 @@ jobs:
       run: choco install ninja
 
     - name: Configure and Build
+      if: matrix.os == 'windows-latest'
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_DIR="$env:LLVM_PATH/lib/cmake/llvm"
+        cmake --build build
+
+    - name: Configure and Build (Non-Windows)
+      if: matrix.os != 'windows-latest'
       run: |
         cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
         cmake --build build
