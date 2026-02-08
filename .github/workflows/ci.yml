@@ -18,10 +18,10 @@ jobs:
         include:
           - os: ubuntu-latest
             arch: amd64
+          - os: macos-latest
+            arch: arm64
           - os: macos-13
             arch: amd64
-          - os: macos-14
-            arch: arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -77,9 +77,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install sccache
-        uses: mozilla-actions/sccache-action@v0.0.4
-
       - name: Set up LLVM (Windows)
         uses: msys2/setup-msys2@v2
         with:
@@ -93,10 +90,7 @@ jobs:
       - name: Configure
         shell: msys2 {0}
         run: |
-          cmake -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER_LAUNCHER=sccache \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         shell: msys2 {0}
