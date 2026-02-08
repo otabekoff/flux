@@ -12,13 +12,29 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # ============================================================================
 # Build Options
 # ============================================================================
-option(FLUX_ENABLE_TESTS "Enable test builds" ON)
+option(FLUX_ENABLE_TESTS "Build unit tests" ON)
 if(FLUX_ENABLE_TESTS)
     set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
     set(INSTALL_GMOCK OFF CACHE BOOL "" FORCE)
 endif()
 option(FLUX_ENABLE_LIT "Enable LLVM lit tests" ON)
-option(FLUX_ENABLE_ASAN "Enable AddressSanitizer (Debug)" OFF)
+option(FLUX_ENABLE_FUZZING "Enable LLVM LibFuzzer" OFF)
+
+if(FLUX_ENABLE_FUZZING)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        message(FATAL_ERROR "LibFuzzer requires Clang. Please set CMAKE_CXX_COMPILER to clang++.")
+    endif()
+    
+    # LibFuzzer on MinGW is experimental/unsupported for some versions.
+    # We only apply the flags if we are NOT on Windows or if we are using MSVC-style Clang.
+    if(WIN32 AND NOT MSVC)
+         message(STATUS "LibFuzzer: Skipping fuzzing targets (not fully supported on MinGW/MSYS2 toolchain).")
+         set(FLUX_ENABLE_FUZZING OFF CACHE BOOL "" FORCE)
+    else()
+        add_compile_options(-fsanitize=fuzzer-no-link)
+        add_link_options(-fsanitize=fuzzer)
+    endif()
+endif()
 
 # ============================================================================
 # CMake Module Path
@@ -97,8 +113,8 @@ if(WIN32)
     endif()
 
     if(NOT FLUX_USING_MSVC_TOOLCHAIN AND NOT _llvm_dir_lower MATCHES "/(clang64|mingw64|ucrt64|msys64)/")
-         # We are trying to use a MinGW/MSYS2 toolchain but found a non-MSYS2 LLVM (e.g. from D:/flux/llvm-dev)
-         message(WARNING "Using MSYS2/MinGW toolchain with a potentially incompatible LLVM library at: ${LLVM_DIR}")
+         # We are trying to use a MinGW/MSYS2 toolchain but found a non-MSYS2 LLVM
+         message(STATUS "Toolchain Check: Using a MinGW/MSYS2 compiler with a non-MSYS2 LLVM (at ${LLVM_DIR}). This is often fine, but ensure the LLVM build is ABI-compatible.")
     endif()
 endif()
 
@@ -285,10 +301,10 @@ if(WIN32 AND NOT UNIX)
         "https://github.com/otabekoff/flux" "Flux Documentation"
     )
     set(CPACK_NSIS_CREATE_ICONS_EXTRA "
-        CreateShortCut '$DESKTOP\\\\Flux Compiler.lnk' '$INSTDIR\\\\bin\\\\flux.exe' '' '$INSTDIR\\\\assets\\\\logo128x128.ico'
+        CreateShortCut '$DESKTOP/Flux Compiler.lnk' '$INSTDIR/bin/flux.exe' '' '$INSTDIR/assets/logo128x128.ico'
     ")
     set(CPACK_NSIS_DELETE_ICONS_EXTRA "
-        Delete '$DESKTOP\\\\Flux Compiler.lnk'
+        Delete '$DESKTOP/Flux Compiler.lnk'
     ")
     
     # Install the assets into the installer so they are available for the shortcut

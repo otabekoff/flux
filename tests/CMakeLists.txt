@@ -48,3 +48,10 @@ flux_set_target_options(flux_unit_tests)
 
 include(GoogleTest)
 gtest_discover_tests(flux_unit_tests)
+
+# --------------------------------------------------------------------------
+# Fuzz tests
+# --------------------------------------------------------------------------
+if(FLUX_ENABLE_FUZZING)
+    add_subdirectory(fuzz)
+endif()
