@@ -49,7 +49,8 @@ jobs:
       if: matrix.os == 'windows-latest'
       shell: pwsh
       run: |
-        Get-ChildItem -Path "C:\Program Files\LLVM" -Recurse -Filter "LLVMConfig.cmake" | Select-Object FullName
+        Get-ChildItem -Path "C:\Program Files\LLVM" -Recurse -Filter "LLVMConfig.cmake" | ForEach-Object { Write-Host $_.FullName }
+        Get-ChildItem -Path "C:\Program Files\LLVM" -Name
 
     - name: Configure CMake (Windows)
       if: matrix.os == 'windows-latest'
