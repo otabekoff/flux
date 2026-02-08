@@ -4,6 +4,8 @@
 ![Release](https://github.com/otabekoff/flux/actions/workflows/release.yml/badge.svg)
 ![License](https://img.shields.io/github/license/otabekoff/flux)
 ![Version](https://img.shields.io/github/v/release/otabekoff/flux)
+![Docker](https://img.shields.io/badge/docker-ready-blue.svg)
+![Security](https://img.shields.io/badge/security-attested-green.svg)
 
 **Flux** is a modern, production-ready, statically typed programming language designed for systems programming. Every type is stated, every allocation is visible, and there are no hidden conversions or copies.
 

@@ -171,11 +171,18 @@ set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_PACKAGE_DESCRIPTION "Flux is a modern, statically typed programming language for systems programming.")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://github.com/otabekoff/flux")
 
 # Windows configuration
 if(WIN32 AND NOT UNIX)
     set(CPACK_GENERATOR "ZIP;NSIS")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "FluxCompiler")
+    set(CPACK_NSIS_DISPLAY_NAME "Flux Compiler")
+    set(CPACK_NSIS_HELP_LINK "https://github.com/otabekoff/flux")
+    set(CPACK_NSIS_URL_INFO_ABOUT "https://github.com/otabekoff/flux")
+    set(CPACK_NSIS_CONTACT "Otabek Sadiridinov")
+    set(CPACK_NSIS_MODIFY_PATH ON)
 endif()
 
 # Linux configuration

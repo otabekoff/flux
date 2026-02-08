@@ -8,7 +8,7 @@ Instructions for building, testing, and developing the Flux compiler.
 |------|---------|-------|
 | **CMake** | ≥ 3.20 | Build system generator |
 | **Ninja** | any | Build backend |
-| **LLVM** | 21.x | Prebuilt development libraries |
+| **LLVM** | 18.x | Prebuilt development libraries |
 | **C++20 compiler** | MSVC 2022 / GCC 13+ / Clang 17+ | Must support C++20 and build without RTTI (`/GR-` or `-fno-rtti`) |
 
 ### Windows-Specific
@@ -19,7 +19,7 @@ Instructions for building, testing, and developing the Flux compiler.
 
 ## Getting LLVM
 
-Download the LLVM 21 prebuilt development package and extract it to `llvm-dev/` at the project root:
+Download the LLVM 18 prebuilt development package and extract it to `llvm-dev/` at the project root:
 
 ```
 flux/
@@ -319,4 +319,8 @@ This will generate the installers in the `build/` directory.
 To set up the hooks locally:
 ```bash
 npm install
+```
+
+```
+gh release delete v0.1.0 --repo otabekoff/flux --yes && git tag -d v0.1.0 && git push origin :refs/tags/v0.1.0 && git tag v0.1.0 && git push origin v0.1.0
 ```
