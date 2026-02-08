@@ -11,6 +11,7 @@
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
 #include <llvm/TargetParser/Host.h>
+#include <llvm/Config/llvm-config.h>
 
 namespace flux {
 
@@ -42,7 +43,11 @@ bool CodeGen::initializeTarget() {
         tripleStr = llvm::sys::getDefaultTargetTriple();
     }
     llvm::Triple triple(tripleStr);
-    llvmModule_->setTargetTriple(triple.getTriple());
+#if LLVM_VERSION_MAJOR >= 19
+    llvmModule_->setTargetTriple(triple);
+#else
+    llvmModule_->setTargetTriple(triple.str());
+#endif
 
     std::string error;
     auto* target = llvm::TargetRegistry::lookupTarget(tripleStr, error);
@@ -62,9 +67,15 @@ bool CodeGen::initializeTarget() {
     default: cgOptLevel = llvm::CodeGenOptLevel::Aggressive; break;
     }
 
+#if LLVM_VERSION_MAJOR >= 19
     targetMachine_ = target->createTargetMachine(
-        triple.getTriple(), opts_.cpu, opts_.features, targetOpts, relocModel,
+        triple, opts_.cpu, opts_.features, targetOpts, relocModel,
         std::nullopt, cgOptLevel);
+#else
+    targetMachine_ = target->createTargetMachine(
+        triple.str(), opts_.cpu, opts_.features, targetOpts, relocModel,
+        std::nullopt, cgOptLevel);
+#endif
 
     if (!targetMachine_) {
         diag_.emitError({}, "failed to create target machine");
