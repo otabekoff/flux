@@ -33,7 +33,7 @@ jobs:
 
     - name: Install LLVM (Windows)
       if: matrix.os == 'windows-latest'
-      run: choco install llvm --version=18.1.8 -y
+      run: choco install llvm --version=18.1.8 -y --no-progress --ignore-checksums
 
     - name: Install Ninja (Windows)
       if: matrix.os == 'windows-latest'
