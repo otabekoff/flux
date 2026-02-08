@@ -118,13 +118,18 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DFLUX_ARCH=$TARGET_ARCH
 
-      - name: Build & Package
-        shell: ${{ matrix.os == 'windows' && 'msys2 {0}' || 'bash' }}
-        env:
-          TARGET_OS: ${{ matrix.os }}
+      - name: Build & Package (Unix)
+        if: matrix.os != 'windows'
         run: |
           cmake --build build
-          cd build && cpack -G $([[ "$TARGET_OS" == "windows" ]] && echo "ZIP;NSIS;WIX" || ([[ "$TARGET_OS" == "macos" ]] && echo "TGZ;DragNDrop" || echo "TGZ;DEB;RPM"))
+          cd build && cpack -G $([[ "${{ matrix.os }}" == "macos" ]] && echo "TGZ;DragNDrop" || echo "TGZ;DEB;RPM")
+
+      - name: Build & Package (Windows)
+        if: matrix.os == 'windows'
+        shell: msys2 {0}
+        run: |
+          cmake --build build
+          cd build && cpack -G "ZIP;NSIS;WIX"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
