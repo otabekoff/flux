@@ -355,3 +355,10 @@ gh release delete v0.1.0 --repo otabekoff/flux --yes && git tag -d v0.1.0 && git
 cmake -B build -G Ninja
 cmake --build build
 ```
+
+```
+git tag -d v0.1.0
+git push origin :refs/tags/v0.1.0
+git tag v0.1.0
+git push origin v0.1.0
+```
