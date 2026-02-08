@@ -28,18 +28,18 @@ public:
               DiagnosticEngine& diag);
 
     /// Declare prototypes for a top-level declaration (first pass).
-    void declareDecl(flux::ast::Decl& decl);
-    void emitDecl(flux::ast::Decl& decl);
-    void emitStmt(flux::ast::Stmt& stmt);
-    llvm::Value* emitExpr(flux::ast::Expr& expr);
+    void declareDecl(ast::Decl& decl);
+    void emitDecl(ast::Decl& decl);
+    void emitStmt(ast::Stmt& stmt);
+    llvm::Value* emitExpr(ast::Expr& expr);
 
 private:
     // Declaration emission
-    void declareFunc(flux::ast::FuncDecl& decl);
-    void declareStruct(flux::ast::StructDecl& decl);
-    void emitFuncDecl(flux::ast::FuncDecl& decl);
-    void emitStructDecl(flux::ast::StructDecl& decl);
-    void emitEnumDecl(flux::ast::EnumDecl& decl);
+    void declareFunc(ast::FuncDecl& decl);
+    void declareStruct(ast::StructDecl& decl);
+    void emitFuncDecl(ast::FuncDecl& decl);
+    void emitStructDecl(ast::StructDecl& decl);
+    void emitEnumDecl(ast::EnumDecl& decl);
 
     // Statement emission
     void emitLetStmt(ast::LetStmt& stmt);
