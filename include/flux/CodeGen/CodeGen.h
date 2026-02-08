@@ -50,6 +50,9 @@ public:
   /// Get the LLVM module (for inspection/testing).
   llvm::Module *getLLVMModule() { return llvmModule_.get(); }
 
+  /// Get the code generation options.
+  CodeGenOptions &getOptions() { return opts_; }
+
 private:
   bool initializeTarget();
   bool runOptimizationPasses();

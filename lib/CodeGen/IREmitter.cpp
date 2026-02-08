@@ -100,6 +100,10 @@ void IREmitter::emitFuncDecl(ast::FuncDecl &decl) {
     return;
   }
 
+  // Determine return type for default return logic
+  llvm::Type *retType = decl.returnType ? typeMapper_.mapType(*decl.returnType)
+                                        : typeMapper_.getVoidType();
+
   // Name arguments
   size_t idx = 0;
   for (auto &arg : func->args()) {
@@ -596,11 +600,30 @@ llvm::Value *IREmitter::emitCallExpr(ast::CallExpr &expr) {
     return nullptr;
   }
 
+  // Cast arguments to match parameter types
+  std::vector<llvm::Value *> castedArgs;
+  auto *funcType = calleeFunc->getFunctionType();
+  for (size_t i = 0; i < args.size(); ++i) {
+    auto *argVal = args[i];
+    if (i < funcType->getNumParams()) {
+      auto *paramType = funcType->getParamType(i);
+      if (argVal->getType() != paramType) {
+        if (argVal->getType()->isIntegerTy() && paramType->isIntegerTy()) {
+          argVal = builder_.CreateIntCast(argVal, paramType, true);
+        } else if (argVal->getType()->isFloatingPointTy() && paramType->isFloatingPointTy()) {
+          argVal = builder_.CreateFPCast(argVal, paramType);
+        }
+        // Add more robust casting for pointers/structs later
+      }
+    }
+    castedArgs.push_back(argVal);
+  }
+
   if (calleeFunc->getReturnType()->isVoidTy()) {
-    builder_.CreateCall(calleeFunc, args);
+    builder_.CreateCall(calleeFunc, castedArgs);
     return nullptr;
   }
-  return builder_.CreateCall(calleeFunc, args, "calltmp");
+  return builder_.CreateCall(calleeFunc, castedArgs, "calltmp");
 }
 
 llvm::Value *IREmitter::emitIfExpr(ast::IfExpr &expr) {

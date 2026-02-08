@@ -260,33 +260,37 @@ int main(int argc, char *argv[]) {
     }
 
     // Link the object file into an executable
-    std::string linker = "clang"; // Default to clang
+    std::string linker = "clang++"; // Use clang++ for C++ runtime compatibility
 #ifdef _WIN32
-    // On Windows, use clang.exe which comes with LLVM/MinGW
-    linker = "clang";
+    linker = "clang++"; 
 #endif
 
     std::stringstream linkCmd;
-    linkCmd << linker << " " << objFile << " -o " << outFile;
+    linkCmd << linker << " " << objFile << " -o " << outFile << " -v";
 
     // Find the runtime library path
-    // For now, assume it's in the same directory as the executable or in a known lib path
     auto exePath = std::filesystem::path(argv[0]).parent_path();
-    std::string runtimePath = exePath.string() + "/FluxRuntime.lib"; // Windows naming
-#ifndef _WIN32
-    runtimePath = exePath.string() + "/libFluxRuntime.a"; // Unix naming
-#endif
-
-    if (std::filesystem::exists(runtimePath)) {
-        linkCmd << " " << runtimePath;
-    } else {
-        // Fallback to searching in standard paths
-        linkCmd << " -lFluxRuntime";
+    std::string runtimePath;
+    
+    // Check for both naming conventions
+    auto p1 = exePath / "libFluxRuntime.a";
+    auto p2 = exePath / "FluxRuntime.lib";
+    
+    if (std::filesystem::exists(p1)) {
+        runtimePath = p1.string();
+    } else if (std::filesystem::exists(p2)) {
+        runtimePath = p2.string();
     }
 
-    // Add necessary libraries for static linking if needed
+    if (!runtimePath.empty()) {
+        linkCmd << " " << "\"" << runtimePath << "\"";
+    } else {
+        linkCmd << " -L" << "\"" << exePath.string() << "\"" << " -lFluxRuntime";
+    }
+
+    // Explicitly target MinGW to avoid MSVC library search
 #ifdef _WIN32
-    linkCmd << " -static";
+    linkCmd << " --target=x86_64-w64-windows-gnu";
 #endif
 
     int ret = std::system(linkCmd.str().c_str());
