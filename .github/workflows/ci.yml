@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
     - uses: actions/checkout@v4
@@ -33,10 +33,13 @@ jobs:
 
     - name: Install LLVM (Windows)
       if: matrix.os == 'windows-latest'
-      id: install-llvm
-      uses: KyleMayes/install-llvm-action@v2
-      with:
-        version: "18"
+      shell: pwsh
+      run: |
+        $llvmUrl = "https://github.com/llvm/llvm-project/releases/download/llvmorg-18.1.8/LLVM-18.1.8-win64.exe"
+        $installer = "$env:TEMP\llvm-installer.exe"
+        Invoke-WebRequest -Uri $llvmUrl -OutFile $installer
+        Start-Process -FilePath $installer -ArgumentList "/S" -Wait
+        echo "C:\Program Files\LLVM\bin" >> $env:GITHUB_PATH
 
     - name: Install Ninja (Windows)
       if: matrix.os == 'windows-latest'
