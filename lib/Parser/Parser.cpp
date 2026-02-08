@@ -1155,7 +1155,7 @@ ast::ExprPtr Parser::parsePostfix(ast::ExprPtr left) {
 
     // Check for struct construction: Type { field: value }
     // or function call: Path::func(args)
-    return std::move(pathExpr);
+    return pathExpr;
   }
 
   // Try operator (?)
