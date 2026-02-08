@@ -34,6 +34,7 @@ jobs:
       run: |
         choco install llvm ninja
         echo "LLVM_DIR=C:/Program Files/LLVM/lib/cmake/llvm" >> $GITHUB_ENV
+        echo "CMAKE_PREFIX_PATH=C:/Program Files/LLVM" >> $GITHUB_ENV
         echo "C:/Program Files/LLVM/bin" >> $GITHUB_PATH
 
     - name: Configure and Build
