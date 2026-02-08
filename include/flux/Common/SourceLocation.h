@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <stddef.h>
 #include <string>
 #include <string_view>
 #include <vector>
