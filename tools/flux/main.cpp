@@ -31,6 +31,16 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#elif __linux__
+#include <limits.h>
+#include <unistd.h>
+#elif __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
 namespace {
 
 struct DriverOptions {
@@ -155,6 +165,25 @@ std::string deriveOutputFilename(const std::string &input,
   return stem;
 }
 
+std::filesystem::path getExecutablePath() {
+#ifdef _WIN32
+  char path[1024];
+  if (GetModuleFileNameA(NULL, path, sizeof(path)))
+    return std::filesystem::path(path);
+#elif __linux__
+  char path[PATH_MAX];
+  ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
+  if (count > 0)
+    return std::filesystem::path(std::string(path, count));
+#elif __APPLE__
+  char path[1024];
+  uint32_t size = sizeof(path);
+  if (_NSGetExecutablePath(path, &size) == 0)
+    return std::filesystem::path(path);
+#endif
+  return std::filesystem::path();
+}
+
 } // anonymous namespace
 
 int main(int argc, char *argv[]) {
@@ -262,30 +291,42 @@ int main(int argc, char *argv[]) {
     // Link the object file into an executable
     std::string linker = "clang++"; // Use clang++ for C++ runtime compatibility
 #ifdef _WIN32
-    linker = "clang++"; 
+    linker = "clang++";
 #endif
 
     std::stringstream linkCmd;
     linkCmd << linker << " " << objFile << " -o " << outFile << " -v";
 
     // Find the runtime library path
-    auto exePath = std::filesystem::path(argv[0]).parent_path();
+    // We search:
+    // 1. Adjacent to executable (Build dir / Windows bundle)
+    // 2. ../lib relative to executable (Unix install / Windows install
+    // structure)
+    auto exePath = getExecutablePath();
+    auto exeDir = exePath.parent_path();
     std::string runtimePath;
-    
-    // Check for both naming conventions
-    auto p1 = exePath / "libFluxRuntime.a";
-    auto p2 = exePath / "FluxRuntime.lib";
-    
-    if (std::filesystem::exists(p1)) {
-        runtimePath = p1.string();
-    } else if (std::filesystem::exists(p2)) {
-        runtimePath = p2.string();
+
+    std::vector<std::filesystem::path> searchDirs = {exeDir, exeDir / "../lib",
+                                                     exeDir / "lib"};
+
+    std::vector<std::string> libNames = {"libFluxRuntime.a", "FluxRuntime.lib"};
+
+    for (const auto &dir : searchDirs) {
+      for (const auto &name : libNames) {
+        auto p = dir / name;
+        if (std::filesystem::exists(p)) {
+          runtimePath = p.string();
+          goto found_runtime; // Break out of double loop
+        }
+      }
     }
+  found_runtime:;
 
     if (!runtimePath.empty()) {
-        linkCmd << " " << "\"" << runtimePath << "\"";
+      linkCmd << " " << "\"" << runtimePath << "\"";
     } else {
-        linkCmd << " -L" << "\"" << exePath.string() << "\"" << " -lFluxRuntime";
+      // Fallback: try to link assuming it's in the library search path
+      linkCmd << " -L" << "\"" << exeDir.string() << "\"" << " -lFluxRuntime";
     }
 
     // Explicitly target MinGW to avoid MSVC library search
