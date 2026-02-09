@@ -312,25 +312,22 @@ if(WIN32)
     set(CPACK_WIX_UPGRADE_GUID "af10e180-b9d1-4e65-83e0-834e404e0960")
     set(CPACK_NSIS_MODIFY_PATH ON)
     
-    # Path Handling for Icons
-    file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/assets/logo128x128.ico" FLUX_ICON_PATH)
-    
-    # NSIS Icons
-    set(CPACK_NSIS_MUI_ICON "${FLUX_ICON_PATH}")
-    set(CPACK_NSIS_MUI_UNIICON "${FLUX_ICON_PATH}")
+    # NSIS Icons (Use forward slashes to avoid CPackConfig escaping issues)
+    set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/logo128x128.ico")
+    set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/logo128x128.ico")
     
     # WiX Icons & UI
-    set(CPACK_WIX_PRODUCT_ICON "${FLUX_ICON_PATH}")
+    set(CPACK_WIX_PRODUCT_ICON "${CMAKE_CURRENT_SOURCE_DIR}/assets/logo128x128.ico")
     set(CPACK_WIX_UI_REF "WixUI_InstallDir")
     set(CPACK_WIX_INSTALL_SCOPE "perMachine")
     
     # NSIS Shortcut logic
-    set(CPACK_NSIS_MENU_LINKS "bin\\\\flux.exe" "Flux Compiler")
+    set(CPACK_NSIS_MENU_LINKS "bin/flux.exe" "Flux Compiler")
     set(CPACK_NSIS_CREATE_ICONS_EXTRA "
-        CreateShortCut '$DESKTOP\\\\Flux Compiler.lnk' '$INSTDIR\\\\bin\\\\flux.exe' '' '$INSTDIR\\\\assets\\\\logo128x128.ico'
+        CreateShortCut '$DESKTOP/Flux Compiler.lnk' '$INSTDIR/bin/flux.exe' '' '$INSTDIR/assets/logo128x128.ico'
     ")
     set(CPACK_NSIS_DELETE_ICONS_EXTRA "
-        Delete '$DESKTOP\\\\Flux Compiler.lnk'
+        Delete '$DESKTOP/Flux Compiler.lnk'
     ")
     install(DIRECTORY assets DESTINATION .)
 endif()
