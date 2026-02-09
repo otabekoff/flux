@@ -81,13 +81,12 @@ jobs:
             mingw-w64-clang-x86_64-clang
             mingw-w64-clang-x86_64-ninja
             mingw-w64-clang-x86_64-cmake
-            mingw-w64-x86_64-nsis
 
-      - name: Install WiX Toolset
+      - name: Install Packaging Tools (Windows)
         if: matrix.os == 'windows'
         uses: crazy-max/ghaction-chocolatey@v3
         with:
-          args: install wixtoolset --no-progress -y
+          args: install nsis wixtoolset --no-progress -y
 
       - name: Set up Windows Paths
         if: matrix.os == 'windows'
